@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.report import router as report_router
 from app.api.router import router as ingest_router
 from app.config import get_settings
 
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(ingest_router, prefix=API_PREFIX)
+    app.include_router(report_router, prefix=API_PREFIX)
 
     return app
 

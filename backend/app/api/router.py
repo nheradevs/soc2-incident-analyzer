@@ -198,7 +198,7 @@ def list_events(
     }
 
 
-def _current_analysis() -> Analysis:
+def current_analysis() -> Analysis:
     """The session's analysis, computed on first use and cached for the session.
 
     Detection is deterministic and pure over the frame, so caching cannot change
@@ -220,13 +220,13 @@ def _current_analysis() -> Analysis:
 @router.post("/analyze", tags=["analysis"])
 def analyze_export() -> dict[str, Any]:
     """Detect and classify the loaded export; return the dashboard payload (RF4)."""
-    return _current_analysis().dashboard
+    return current_analysis().dashboard
 
 
 @router.get("/incidents/{incident_id}", tags=["analysis"])
 def get_incident(incident_id: str) -> dict[str, Any]:
     """Risk block, findings and joined evidence rows of one incident (RF4)."""
-    incident = _current_analysis().incidents.get(incident_id)
+    incident = current_analysis().incidents.get(incident_id)
     if incident is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
