@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.router import router as ingest_router
 from app.config import get_settings
 
 API_PREFIX = "/api"
@@ -32,6 +33,8 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         """Liveness probe used by the frontend and the demo script."""
         return {"status": "ok"}
+
+    app.include_router(ingest_router, prefix=API_PREFIX)
 
     return app
 
