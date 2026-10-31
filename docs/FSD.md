@@ -82,7 +82,7 @@ Hoja única `SIEM Export`. Encabezado en la fila 1. Filas ordenadas por `Timesta
 
 ## 4. Trampas conocidas y normalización obligatoria
 
-Estas nueve condiciones **no son opcionales**: cada una, ignorada, produce detecciones perdidas en silencio o falsos positivos. Se implementan en una capa previa a los detectores (§9, `ingest/normalize.py` y `ingest/parse.py`), no dentro de cada detector.
+Estas diez condiciones **no son opcionales**: cada una, ignorada, produce detecciones perdidas en silencio o falsos positivos. Se implementan en una capa previa a los detectores (§9, `ingest/normalize.py` y `ingest/parse.py`), no dentro de cada detector.
 
 | # | Trampa | Efecto si se ignora | Normalización exigida |
 |---|---|---|---|

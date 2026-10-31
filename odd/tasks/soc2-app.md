@@ -33,7 +33,7 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 - T6 [S5,S7] Report generation: 9 secciones en 2 versiones + limitaciones, con IA opcional — commit `feat(report)` — **completa**
 - T7 [S6] PDF export — commit `feat(pdf)` — **completa**
 - T8 [S10] Security: upload validation, sanitization, CORS, env config — commit `chore(security)` — **completa**
-- T9 [S9] Demo polish + README for portfolio — commit `docs/readme`
+- T9 [S9] Demo polish + README for portfolio — commits `feat(ui)`, `docs(readme)`, `chore(cleanup)` — **completa**
 
 ## Log
 
@@ -67,3 +67,6 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 - L28 (auditoría RF8, evidencia): frontend **sin** `innerHTML`, `bypassSecurityTrust`, `DomSanitizer` ni `outerHTML` — no hay superficie de HTML crudo. Falta validación MIME real del upload (hoy sólo extensión + tamaño + lectura del workbook) y rate limiting (inexistente). Ambos son T8.
 - L29 (evidence): T8. `chore(security)`: validación **por contenido** del upload (firma ZIP + `[Content_Types].xml` + parte `xl/`, rechazo explícito de OLE2) y rate limiting in-process de ventana fija en upload/analyze/report/pdf, con límites en `Settings`. 273 tests. Verificado por el parent: texto renombrado → 400, OLE2 → 400, ZIP sin libro → 400, xlsx real enviado como `application/octet-stream` → 200 con 715 filas; límite 2 → `[200, 200, 429, 429]`, `X-Forwarded-For` falso no renueva presupuesto, `/api/health` no afectado, sesión intacta tras el 429.
 - L30 (decisión): la identidad del cliente sale de `request.client.host` (peer TCP del socket), **nunca** de `X-Forwarded-For`/`X-Real-IP`/`Forwarded`, porque el demo se sirve directo sin proxy confiable y esos headers son input del atacante. Sin peer disponible → bucket compartido `desconocido`, limitado en vez de exento. Límites documentados en `backend/.env.example` (el worker no tenía esa superficie; los agregué yo).
+- L31 (evidence): T9 en tres work units. `feat(ui)` = pantalla `/informe` (tabs ejecutivo/técnico, 9 secciones en orden de payload, descarga PDF como blob con object URL revocada, nav con `routerLink`, 66 specs). `docs(readme)` = README de portafolio en inglés (209 líneas) con la tabla de los 6 incidentes y las decisiones defendibles; cada número trazado a código o a una corrida verificada. `chore(cleanup)` = borrado de `Entities.keys()` (sin llamadores, verificado por grep) + `scripts/make_synthetic_export.py` (50.050 filas = 70×715, mismo esquema, sin tipos de incidente nuevos, salida en `backend/out/synthetic/` que ya está gitignored) + 7 tests de determinismo.
+- L32 (medición de escala): sobre el fixture sintético de 50.050 filas: `load_export` 7,50 s + `detect` 17,64 s + `classify` 0,20 s = **25,33 s**, dentro del objetivo de <30 s del FSD §7 pero con poco margen. Sobre el archivo real: 0,53 s de punta a punta. El fixture produce 420 incidentes / 2450 hallazgos = 70×6, o sea los mismos seis clústeres replicados, sin tipos nuevos.
+- L33 (corrección de documento): el FSD §4 decía "estas nueve condiciones" cuando la tabla enumera **diez** trampas (4.1–4.10). Corregido.

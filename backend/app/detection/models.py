@@ -54,15 +54,6 @@ class Entities:
     source_ips: tuple[str, ...] = ()
     shares: tuple[str, ...] = ()
 
-    def keys(self) -> set[str]:
-        """Namespaced keys: a user and a host with the same name never merge."""
-        return (
-            {f"user:{value}" for value in self.users}
-            | {f"host:{value}" for value in self.hosts}
-            | {f"ip:{value}" for value in self.source_ips}
-            | {f"share:{value}" for value in self.shares}
-        )
-
     def as_dict(self) -> dict[str, list[str]]:
         return {
             "users": list(self.users),
