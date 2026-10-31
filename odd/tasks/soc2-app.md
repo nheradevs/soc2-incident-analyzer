@@ -37,7 +37,7 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 
 ## Log
 
-- L1 (user): "analiza este requerimiento" — PDF PROYECTO FINAL.pdf adjunto; luego confirmó tener el Excel, eligió Angular ("React es una mierda... puede ser mejor en este caso angular"), stack rápido y sencillo con "un poco de seguridad", IA vía nan.builders (https://nan.builders/docs).
+- L1 (user): "analiza este requerimiento" — PDF PROYECTO FINAL.pdf adjunto; luego confirmó tener el Excel, eligió Angular sobre React para este caso, stack rápido y sencillo con "un poco de seguridad", IA vía nan.builders (https://nan.builders/docs).
 - L2 (user): "Por favor, analiza los archivos de esta carpeta. Deben tener la base para mi último proyecto del bootcamp analista soc 2 en base a las indicaciones de los profesores" — pegado completo del enunciado del bootcamp (contexto Estocolmo/SOC N2, 6 funcionalidades, 8 secciones del informe, entregables PDF + video ≤5 min, valor de portafolio).
 - L3 (evidence): el Excel real está en el repo. Perfilado completo: 715 filas × 12 columnas, no "miles de miles"; 6 incidentes plantados verificados con `Log_ID` (FSD §8); línea base de `4625` medida en máximo 2 fallos/usuario/10 min; brute force RDP de INC-2 tiene solo 4 intentos y **no** lo detecta una regla de conteo `≥5` → se separa D1c (externo) de D1a (conteo).
 - L4 (user): "Ve por la A" — autoriza actualizar FSD + este documento con el esquema real, las trampas de datos, los umbrales medidos y las 4 correcciones, antes de escribir código.
