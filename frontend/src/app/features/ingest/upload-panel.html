@@ -1,0 +1,51 @@
+<section class="upload-panel" aria-labelledby="upload-title">
+  <h2 id="upload-title">Cargar export del SIEM</h2>
+
+  <div
+    class="drop-zone"
+    [class.drop-zone--active]="dragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+  >
+    <mat-icon class="drop-icon" aria-hidden="true">upload_file</mat-icon>
+    <p class="drop-hint" id="upload-hint">
+      Arrastre el export .xlsx aquí o selecciónelo en su equipo.
+    </p>
+
+    <button
+      id="siem-file-label"
+      mat-flat-button
+      type="button"
+      [disabled]="busy()"
+      (click)="fileInput.click()"
+    >
+      Seleccionar archivo .xlsx
+    </button>
+    <input
+      #fileInput
+      id="siem-file"
+      class="visually-hidden"
+      type="file"
+      accept=".xlsx"
+      aria-labelledby="siem-file-label"
+      aria-describedby="upload-hint"
+      (change)="onFileInputChange($event)"
+    />
+  </div>
+
+  @if (busy()) {
+    <p class="upload-progress" role="status">
+      <mat-spinner diameter="18" aria-hidden="true" />
+      <span>Procesando archivo…</span>
+    </p>
+  }
+
+  @if (error(); as message) {
+    <p class="upload-error" role="alert">{{ message }}</p>
+  } @else if (selectedFileName(); as fileName) {
+    @if (!busy()) {
+      <p class="upload-done">Archivo procesado: {{ fileName }}</p>
+    }
+  }
+</section>

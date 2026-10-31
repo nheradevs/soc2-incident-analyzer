@@ -1,0 +1,14 @@
+<div class="ingest-page">
+  <app-upload-panel (uploaded)="onUploaded($event)" />
+
+  @if (summary(); as data) {
+    <app-quality-summary [summary]="data" />
+  } @else {
+    <p class="empty-state">
+      Aún no se ha cargado ningún archivo. El resumen de calidad y la tabla de eventos
+      aparecerán cuando cargue un export .xlsx.
+    </p>
+  }
+
+  <app-events-table [refreshKey]="refreshKey()" />
+</div>

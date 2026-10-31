@@ -1,0 +1,48 @@
+.events {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 1rem;
+  background: var(--mat-sys-surface-container-low);
+}
+
+h2 {
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+}
+
+.search-field {
+  max-width: 26rem;
+}
+
+.table-scroll {
+  overflow: auto;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 0.5rem;
+}
+
+table {
+  width: 100%;
+  min-width: 48rem;
+}
+
+td {
+  max-width: 24rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-state,
+.table-total {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.table-state {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: var(--mat-sys-surface-container);
+}
