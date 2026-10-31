@@ -31,7 +31,7 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 - T4 [S4] Risk classification with justification (matriz impacto × confianza; no usa `Severity` del SIEM) — commits `0b6f6a5`, `fix(risk)` — **completa**
 - T5 [S3] Dashboard: interactive charts by severity; sin "top IPs" como indicador de riesgo — commits `396aa03`, `feat(ui)` — **completa**
 - T6 [S5,S7] Report generation: 9 secciones en 2 versiones + limitaciones, con IA opcional — commit `feat(report)` — **completa**
-- T7 [S6] PDF export — commit `feat/pdf`
+- T7 [S6] PDF export — commit `feat(pdf)` — **completa**
 - T8 [S10] Security: upload validation, sanitization, CORS, env config — commit `chore/security`
 - T9 [S9] Demo polish + README for portfolio — commit `docs/readme`
 
@@ -62,3 +62,6 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 - L23 (evidence): guardarraíl ejercitado con cuatro casos inyectados: cita `EVT-` inventada → rechazada; incidente inexistente → rechazado; severidad mentida (`INC-0936` es alto, el texto afirmaba crítico) → rechazada; cita real → aceptada. En los tres rechazos el cuerpo determinístico se conserva y el estado queda `deshabilitada_por_error`.
 - L24 (limitación del guard): las afirmaciones de nivel se detectan con un conjunto finito de giros en español; una redacción novedosa que afirme un nivel podría pasar. La mitigación es el prompt cerrado más el fallback conservador, no NLP. Declararlo así, en esos términos.
 - L25 (limitación de diseño): en la versión técnica la reescritura asistida se limita a las secciones 1, 6 y 7; la sección 3 (detalle por hallazgo) queda redactada por reglas para mantener auditabilidad. Si se quisiera reescribir, haría falta una verificación de cobertura además de la de veracidad.
+- L26 (evidence): T7. `feat(pdf)`: PDF server-side con ReportLab (sin dependencias de sistema), 251 tests. Verificado por el parent: **17 páginas, 45,4 KB**, `%PDF-`…`%%EOF`, acentos correctos (`crítico`), las 9 secciones en ambas versiones, `Log_ID` reales en las tablas de evidencia, clasificación en portada, sin fuga de clave, `Content-Disposition: attachment; filename="informe-soc2-20261023.pdf"` (ASCII, sin espacios), 409 antes de subir. Generación en 0,56 s.
+- L27 (deuda conocida): las tablas de incidentes y evidencia del PDF se reconstruyen con regex anclados sobre el texto determinístico de `templates.py`. Si se cambia la redacción de una plantilla, las tablas degradan a párrafos sin romper ni inventar. Deuda aceptada; el arreglo correcto sería exponer un bloque estructurado de incidentes en el payload del informe. Pinneado por `test_the_tabular_sections_are_rendered_as_tables`.
+- L28 (auditoría RF8, evidencia): frontend **sin** `innerHTML`, `bypassSecurityTrust`, `DomSanitizer` ni `outerHTML` — no hay superficie de HTML crudo. Falta validación MIME real del upload (hoy sólo extensión + tamaño + lectura del workbook) y rate limiting (inexistente). Ambos son T8.
