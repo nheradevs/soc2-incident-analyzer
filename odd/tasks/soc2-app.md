@@ -25,7 +25,7 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 
 ## Tasks
 
-- T1 [S9,S7] Scaffold monorepo: backend FastAPI + frontend Angular — commit `feat/scaffold`
+- T1 [S9,S7] Scaffold monorepo: backend FastAPI + frontend Angular 20 — commit `feat/scaffold` → `0f5adc6`
 - T2 [S1] Excel ingestion + normalización (FSD §4) + reporte de calidad de datos + table view — commit `feat/ingest` — **desbloqueada**: esquema fijado en FSD §3
 - T3 [S2,S8] Detection engine: D1a-D7 con umbrales de FSD §6 + correlación; los 6 incidentes de FSD §8 como test de regresión — commit `feat/detection`
 - T4 [S4] Risk classification with justification (matriz impacto × confianza; no usa `Severity` del SIEM) — commit `feat/risk`
@@ -42,3 +42,5 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 - L3 (evidence): el Excel real está en el repo. Perfilado completo: 715 filas × 12 columnas, no "miles de miles"; 6 incidentes plantados verificados con `Log_ID` (FSD §8); línea base de `4625` medida en máximo 2 fallos/usuario/10 min; brute force RDP de INC-2 tiene solo 4 intentos y **no** lo detecta una regla de conteo `≥5` → se separa D1c (externo) de D1a (conteo).
 - L4 (user): "Ve por la A" — autoriza actualizar FSD + este documento con el esquema real, las trampas de datos, los umbrales medidos y las 4 correcciones, antes de escribir código.
 - L5 (decision): FSD elevado a v0.2. Correcciones aplicadas: (1) se retira el RNF "100k filas en <30 s" por inverificable → fixture sintético declarado; (2) se agrega capa `normalize.py` + `parse.py` a la arquitectura; (3) se agrega §7.4 Limitaciones como sección **obligatoria** del informe (9 secciones, no 8); (4) este Log se actualiza y T2/T3 se declaran desbloqueadas. INC-6 (`backupsvc`) queda como caso de calibración de S8 con `requires_validation`.
+- L6 (decision): entorno resuelto. Node 22.23.4 vía nvm (user-scoped en `~/.nvm`, alias `default` → 22), `.nvmrc`=22. Requirió comentar `prefix=/home/nhera/.npm-global` en `~/.npmrc` (backup en `~/.npmrc.bak`): nvm rechazaba activar su Node mientras ese prefix existiera. Backend pinneado a Python 3.12.3 (uv intentaba 3.15.2 de su intérprete managed — demasiado al filo). Angular 20.3.0 (Node 18.19.1 del sistema era el techo de Angular 19).
+- L7 (evidence): `feat/scaffold` = `0f5adc6`, 31 archivos. Backend: FastAPI + pydantic-settings, CORS a `http://localhost:4200`, `/api/health`, uvicorn verificado a mano. Frontend: Angular 20 standalone + `proxy.conf.json` (`/api` → `:8000`), build 247 kB initial (bajo el budget de 500 kB). 6 tests verdes (health + contrato CORS), ruff limpio. CORS verificado empíricamente: origen no confiable no recibe `Access-Control-Allow-Origin` y su preflight da 400.
