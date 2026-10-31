@@ -1,0 +1,35 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+coverage/
+npm-debug.log*
+yarn-error.log*
+
+# Harness-local, auto-generated per machine (also self-ignored by .atl/.gitignore)
+.atl/
+
+# Generated analysis outputs (the app writes PDFs here; deliverable copies live in docs/)
+backend/out/
+reports/out/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
