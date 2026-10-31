@@ -1,0 +1,30 @@
+[project]
+name = "soc2-analyzer"
+version = "0.1.0"
+description = "SOC L2 incident analyzer: deterministic detection over SIEM Excel exports"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pandas>=2.2",
+    "openpyxl>=3.1",
+    "python-multipart>=0.0.12",
+    "pydantic-settings>=2.6",
+    "httpx>=0.27",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.7",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
