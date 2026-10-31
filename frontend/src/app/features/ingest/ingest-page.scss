@@ -14,3 +14,27 @@
   background: var(--mat-sys-surface-container);
   color: var(--mat-sys-on-surface-variant);
 }
+
+// Next-step block offered once the export is loaded: same surface, radius and
+// padding as the other blocks of the page, with the action aligned to the end.
+.next-step {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 1rem;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.next-step-hint {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+.to-analysis {
+  flex: none;
+}

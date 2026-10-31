@@ -1,0 +1,86 @@
+<section class="report" aria-labelledby="report-title">
+  <header class="report-header">
+    <div>
+      <h2 id="report-title">Informe del análisis</h2>
+      <p class="report-subtitle">
+        Dos versiones del mismo informe, generadas por el servidor a partir del export analizado.
+      </p>
+    </div>
+    <div class="report-header-actions">
+      <a mat-stroked-button routerLink="/analisis">Volver al dashboard</a>
+      <a mat-stroked-button routerLink="/cargar">Ir al paso «Cargar»</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="report-loading" role="status">
+      <mat-spinner diameter="24" aria-hidden="true" />
+      <span>Generando el informe del export cargado…</span>
+    </p>
+  } @else if (failure(); as problem) {
+    <div class="report-failure" role="alert">
+      <p class="report-failure-message">{{ problem.message }}</p>
+
+      @if (problem.status === 409) {
+        <p class="report-empty-hint">
+          El informe se compone a partir del archivo cargado en el paso «Cargar». Cargue un
+          export .xlsx para ver sus nueve secciones en versión ejecutiva y técnica.
+        </p>
+      }
+
+      <div class="report-failure-actions">
+        <button mat-flat-button type="button" (click)="reload()">Reintentar la generación</button>
+        <a mat-stroked-button routerLink="/cargar">Ir al paso «Cargar»</a>
+        <a mat-stroked-button routerLink="/analisis">Ir al dashboard</a>
+      </div>
+    </div>
+  } @else if (payload()) {
+    <p class="report-narrative">{{ narrativeLine() }}</p>
+
+    <div class="report-toolbar">
+      <mat-button-toggle-group
+        class="report-tabs"
+        aria-label="Versión del informe"
+        [value]="version()"
+        (change)="selectVersion($event.value)"
+      >
+        @for (option of versions; track option.key) {
+          <mat-button-toggle [value]="option.key">{{ option.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      <div class="report-download">
+        <button
+          mat-flat-button
+          type="button"
+          class="report-download-button"
+          [disabled]="downloading()"
+          (click)="downloadPdf()"
+        >
+          @if (downloading()) {
+            <mat-spinner class="report-download-busy" diameter="18" aria-hidden="true" />
+            <span>Generando el PDF…</span>
+          } @else {
+            <span>Descargar informe en PDF</span>
+          }
+        </button>
+        <p class="report-download-hint">
+          El PDF lo genera el servidor con el mismo contenido que se muestra aquí.
+        </p>
+      </div>
+    </div>
+
+    @if (downloadFailure(); as problem) {
+      <p class="report-download-failure" role="alert">{{ problem.message }}</p>
+    }
+
+    @if (activeVersion(); as active) {
+      <app-report-version [version]="active" />
+    }
+
+    <p class="report-footnote">
+      Contenido generado por el servidor a partir del export analizado. Esta pantalla muestra las
+      secciones tal como llegan: no añade, resume ni completa nada.
+    </p>
+  }
+</section>

@@ -20,6 +20,12 @@ h2 {
   font: var(--mat-sys-headline-small);
 }
 
+.analysis-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .analysis-subtitle {
   margin: 0.25rem 0 0;
   color: var(--mat-sys-on-surface-variant);

@@ -1,0 +1,126 @@
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Subscription } from 'rxjs';
+
+import { ApiFailure } from '../../core/models/ingest.models';
+import {
+  ReportDownload,
+  ReportPayload,
+  ReportVersion,
+  ReportVersionKey,
+} from '../../core/models/report.models';
+import { ReportApiService } from '../../core/services/report-api.service';
+import { narrativeStateLine, versionTabLabel } from './report-format';
+import { ReportVersionPanel } from './report-version';
+
+/**
+ * The Informe step (FSD RF5, S5) and its PDF download (RF6, S6).
+ *
+ * The whole view is driven by `POST /api/report`: the screen renders the nine
+ * sections of the payload, in payload order and without completing anything. A
+ * 409 means nothing has been uploaded yet, so the page shows that message
+ * verbatim with the way back to the load step.
+ */
+@Component({
+  selector: 'app-report-page',
+  imports: [
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatProgressSpinnerModule,
+    ReportVersionPanel,
+    RouterLink,
+  ],
+  templateUrl: './report-page.html',
+  styleUrl: './report-page.scss',
+})
+export class ReportPage implements OnInit, OnDestroy {
+  private readonly api = inject(ReportApiService);
+
+  readonly payload = signal<ReportPayload | null>(null);
+  readonly loading = signal(true);
+  readonly failure = signal<ApiFailure | null>(null);
+  readonly version = signal<ReportVersionKey>('ejecutiva');
+  readonly downloading = signal(false);
+  readonly downloadFailure = signal<ApiFailure | null>(null);
+
+  /** Both audience versions, in the order the FSD names them. */
+  readonly versions: { key: ReportVersionKey; label: string }[] = [
+    { key: 'ejecutiva', label: versionTabLabel('ejecutiva') },
+    { key: 'tecnica', label: versionTabLabel('tecnica') },
+  ];
+
+  readonly activeVersion = computed<ReportVersion | null>(() => {
+    const payload = this.payload();
+    return payload === null ? null : payload.versions[this.version()];
+  });
+
+  readonly narrativeLine = computed(() => narrativeStateLine(this.payload()?.narrative.estado));
+
+  private reportSubscription: Subscription | null = null;
+  private downloadSubscription: Subscription | null = null;
+
+  ngOnInit(): void {
+    this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.reportSubscription?.unsubscribe();
+    this.downloadSubscription?.unsubscribe();
+    this.reportSubscription = null;
+    this.downloadSubscription = null;
+  }
+
+  reload(): void {
+    this.load();
+  }
+
+  selectVersion(key: string): void {
+    if (key === 'ejecutiva' || key === 'tecnica') {
+      this.version.set(key);
+    }
+  }
+
+  /** Fetch the PDF as a blob and hand it to the browser under the suggested name. */
+  downloadPdf(): void {
+    if (this.downloading()) {
+      return;
+    }
+    this.downloadSubscription?.unsubscribe();
+    this.downloading.set(true);
+    this.downloadFailure.set(null);
+
+    this.downloadSubscription = this.api.downloadReportPdf().subscribe({
+      next: (download: ReportDownload) => {
+        this.downloading.set(false);
+        this.api.saveReport(download);
+      },
+      error: (failure: ApiFailure) => {
+        this.downloadFailure.set(failure);
+        this.downloading.set(false);
+      },
+    });
+  }
+
+  private load(): void {
+    this.reportSubscription?.unsubscribe();
+    this.loading.set(true);
+    this.failure.set(null);
+    this.downloadFailure.set(null);
+    this.payload.set(null);
+    this.version.set('ejecutiva');
+
+    this.reportSubscription = this.api.report().subscribe({
+      next: (payload: ReportPayload) => {
+        this.payload.set(payload);
+        this.loading.set(false);
+      },
+      error: (failure: ApiFailure) => {
+        this.failure.set(failure);
+        this.loading.set(false);
+      },
+    });
+  }
+}

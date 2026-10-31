@@ -1,0 +1,21 @@
+<article class="report-version" [attr.aria-label]="version().label">
+  <p class="report-version-label">{{ version().label }}</p>
+
+  @for (section of version().sections; track section.key) {
+    <section class="report-section" [attr.data-section]="section.key">
+      <h3 class="report-section-title">{{ section.title }}</h3>
+
+      @for (block of blockOf(section.body); track $index) {
+        @if (block.kind === 'list') {
+          <ul class="report-list">
+            @for (item of block.items; track $index) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        } @else {
+          <p class="report-paragraph">{{ block.text }}</p>
+        }
+      }
+    </section>
+  }
+</article>

@@ -78,6 +78,14 @@ describe('AnalysisPage', () => {
     expect(element().querySelectorAll('.incident').length).toBe(2);
   });
 
+  it('links to the report step next to the way back to Cargar', () => {
+    flushDashboard();
+
+    const toReport = element().querySelector('.to-report') as HTMLAnchorElement;
+    expect(toReport.getAttribute('href')).toBe('/informe');
+    expect(toReport.textContent).toContain('informe');
+  });
+
   it('opens the incident drill-down with its distinct evidence count', () => {
     flushDashboard();
 

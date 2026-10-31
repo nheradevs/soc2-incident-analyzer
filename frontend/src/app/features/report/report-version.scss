@@ -1,0 +1,44 @@
+.report-version {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.report-version-label {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-large);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 1rem;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.report-section-title {
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+.report-paragraph {
+  margin: 0;
+  font: var(--mat-sys-body-medium);
+  line-height: 1.6;
+}
+
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  font: var(--mat-sys-body-medium);
+  line-height: 1.55;
+}

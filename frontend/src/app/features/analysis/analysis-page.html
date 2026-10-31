@@ -7,7 +7,10 @@
         export mide.
       </p>
     </div>
-    <a mat-stroked-button routerLink="/cargar">Volver a la carga</a>
+    <div class="analysis-header-actions">
+      <a mat-flat-button routerLink="/informe" class="to-report">Ver el informe</a>
+      <a mat-stroked-button routerLink="/cargar">Volver a la carga</a>
+    </div>
   </header>
 
   @if (loading()) {
