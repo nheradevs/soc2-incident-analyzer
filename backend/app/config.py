@@ -25,6 +25,18 @@ class Settings(BaseSettings):
     # Upload guard (RF1 / RF8).
     max_upload_mb: int = 50
 
+    # Rate limiting (RF8): in-process fixed window, per client and per endpoint.
+    # The counter lives in the API process (see `app/api/ratelimit.py`); the
+    # defaults leave a normal analyst session far below the limit, and they are
+    # generous enough that a dashboard refresh loop never blocks a PDF download
+    # because every endpoint has its own bucket.
+    rate_limit_enabled: bool = True
+    rate_limit_window_seconds: int = 60
+    rate_limit_upload: int = 20
+    rate_limit_analyze: int = 120
+    rate_limit_report: int = 60
+    rate_limit_pdf: int = 30
+
     # Only the local frontend may call the API (RF8).
     cors_origins: list[str] = ["http://localhost:4200"]
 

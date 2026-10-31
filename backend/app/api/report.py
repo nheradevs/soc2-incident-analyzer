@@ -14,6 +14,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Response
 
 from app.api.analysis import Analysis
+from app.api.ratelimit import PDF_BUCKET, REPORT_BUCKET, rate_limited
 from app.api.router import current_analysis
 from app.api.session import session_store
 from app.config import Settings, get_settings
@@ -52,7 +53,11 @@ def composed_report(analysis: Analysis, client: NarrativeClient) -> dict[str, An
     return report
 
 
-@router.post("/report", tags=["report"])
+@router.post(
+    "/report",
+    tags=["report"],
+    dependencies=[Depends(rate_limited(REPORT_BUCKET, "rate_limit_report"))],
+)
 def generate_report(
     client: Annotated[NarrativeClient, Depends(get_narrative_client)],
 ) -> dict[str, Any]:
@@ -64,7 +69,11 @@ def generate_report(
     return composed_report(current_analysis(), client)
 
 
-@router.get("/report/pdf", tags=["report"])
+@router.get(
+    "/report/pdf",
+    tags=["report"],
+    dependencies=[Depends(rate_limited(PDF_BUCKET, "rate_limit_pdf"))],
+)
 def export_report_pdf(
     client: Annotated[NarrativeClient, Depends(get_narrative_client)],
 ) -> Response:

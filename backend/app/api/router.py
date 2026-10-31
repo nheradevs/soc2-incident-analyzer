@@ -17,8 +17,10 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, 
 from openpyxl.utils.exceptions import InvalidFileException
 
 from app.api.analysis import Analysis, analyze
+from app.api.ratelimit import ANALYZE_BUCKET, UPLOAD_BUCKET, rate_limited
 from app.api.serialization import records
 from app.api.session import session_store
+from app.api.upload_guard import ContentError, validate_workbook_payload
 from app.config import Settings, get_settings
 from app.ingest.loader import SchemaError, load_export
 from app.ingest.quality import quality_report
@@ -84,7 +86,11 @@ def _too_large(settings: Settings) -> HTTPException:
     )
 
 
-@router.post("/upload", tags=["ingest"])
+@router.post(
+    "/upload",
+    tags=["ingest"],
+    dependencies=[Depends(rate_limited(UPLOAD_BUCKET, "rate_limit_upload"))],
+)
 async def upload_export(
     file: Annotated[UploadFile, File(description="Export del SIEM en formato .xlsx.")],
     settings: Annotated[Settings, Depends(get_settings)],
@@ -111,6 +117,16 @@ async def upload_export(
         )
     if len(payload) > max_bytes:
         raise _too_large(settings)
+
+    # The extension and the declared media type only state what the client says
+    # this file is; a renamed `.exe`, an HTML page or a binary `.xls` all use the
+    # `.xlsx` suffix. Validate the bytes before handing them to openpyxl (RF8).
+    try:
+        validate_workbook_payload(payload)
+    except ContentError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)
+        ) from error
 
     try:
         frame = load_export(io.BytesIO(payload))
@@ -217,7 +233,11 @@ def current_analysis() -> Analysis:
     return cached
 
 
-@router.post("/analyze", tags=["analysis"])
+@router.post(
+    "/analyze",
+    tags=["analysis"],
+    dependencies=[Depends(rate_limited(ANALYZE_BUCKET, "rate_limit_analyze"))],
+)
 def analyze_export() -> dict[str, Any]:
     """Detect and classify the loaded export; return the dashboard payload (RF4)."""
     return current_analysis().dashboard

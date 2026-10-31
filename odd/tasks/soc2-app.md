@@ -32,7 +32,7 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 - T5 [S3] Dashboard: interactive charts by severity; sin "top IPs" como indicador de riesgo — commits `396aa03`, `feat(ui)` — **completa**
 - T6 [S5,S7] Report generation: 9 secciones en 2 versiones + limitaciones, con IA opcional — commit `feat(report)` — **completa**
 - T7 [S6] PDF export — commit `feat(pdf)` — **completa**
-- T8 [S10] Security: upload validation, sanitization, CORS, env config — commit `chore/security`
+- T8 [S10] Security: upload validation, sanitization, CORS, env config — commit `chore(security)` — **completa**
 - T9 [S9] Demo polish + README for portfolio — commit `docs/readme`
 
 ## Log
@@ -65,3 +65,5 @@ Trampas que obligan a la capa de normalización (FSD §4): `Event_ID` mixto int/
 - L26 (evidence): T7. `feat(pdf)`: PDF server-side con ReportLab (sin dependencias de sistema), 251 tests. Verificado por el parent: **17 páginas, 45,4 KB**, `%PDF-`…`%%EOF`, acentos correctos (`crítico`), las 9 secciones en ambas versiones, `Log_ID` reales en las tablas de evidencia, clasificación en portada, sin fuga de clave, `Content-Disposition: attachment; filename="informe-soc2-20261023.pdf"` (ASCII, sin espacios), 409 antes de subir. Generación en 0,56 s.
 - L27 (deuda conocida): las tablas de incidentes y evidencia del PDF se reconstruyen con regex anclados sobre el texto determinístico de `templates.py`. Si se cambia la redacción de una plantilla, las tablas degradan a párrafos sin romper ni inventar. Deuda aceptada; el arreglo correcto sería exponer un bloque estructurado de incidentes en el payload del informe. Pinneado por `test_the_tabular_sections_are_rendered_as_tables`.
 - L28 (auditoría RF8, evidencia): frontend **sin** `innerHTML`, `bypassSecurityTrust`, `DomSanitizer` ni `outerHTML` — no hay superficie de HTML crudo. Falta validación MIME real del upload (hoy sólo extensión + tamaño + lectura del workbook) y rate limiting (inexistente). Ambos son T8.
+- L29 (evidence): T8. `chore(security)`: validación **por contenido** del upload (firma ZIP + `[Content_Types].xml` + parte `xl/`, rechazo explícito de OLE2) y rate limiting in-process de ventana fija en upload/analyze/report/pdf, con límites en `Settings`. 273 tests. Verificado por el parent: texto renombrado → 400, OLE2 → 400, ZIP sin libro → 400, xlsx real enviado como `application/octet-stream` → 200 con 715 filas; límite 2 → `[200, 200, 429, 429]`, `X-Forwarded-For` falso no renueva presupuesto, `/api/health` no afectado, sesión intacta tras el 429.
+- L30 (decisión): la identidad del cliente sale de `request.client.host` (peer TCP del socket), **nunca** de `X-Forwarded-For`/`X-Real-IP`/`Forwarded`, porque el demo se sirve directo sin proxy confiable y esos headers son input del atacante. Sin peer disponible → bucket compartido `desconocido`, limitado en vez de exento. Límites documentados en `backend/.env.example` (el worker no tenía esa superficie; los agregué yo).
