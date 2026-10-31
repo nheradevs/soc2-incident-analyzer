@@ -163,11 +163,15 @@ Estructura obligatoria:
 - Incluye portada (título, cliente, fecha, clasificación), tablas de hallazgos, las dos versiones y las limitaciones.
 - Descarga directa desde la UI.
 
-### RF7 — IA integrada (nan.builders)
-- Proveedor: API OpenAI-compatible `https://api.nan.builders/v1`, modelo configurable (default `deepseek-v4-flash`), key en variable de entorno `NAN_API_KEY` (nunca en el repo ni en el cliente).
-- Generación de informes con `stream: true` (sin streaming el gateway corta a 120 s con 524).
-- `reasoning_effort` configurable; el informe usa valor bajo/medio para latencia razonable.
-- Manejo de errores: si la IA no responde, el informe se genera igual con la plantilla determinística y se marca como "sin narrativa IA".
+### RF7 — IA integrada (opcional, cualquier proveedor OpenAI-compatible)
+
+El requisito del bootcamp es **usar IA para construir el proyecto** (agentes, modelos, vibecoding), no contratar un modelo pago para dentro de la app. En consecuencia:
+
+- **El informe determinístico es el producto.** Las nueve secciones, en versión ejecutiva y técnica, se generan completas con reglas a partir de los hallazgos clasificados, sin ninguna clave y sin ningún costo.
+- **La redacción asistida por IA es un extra opcional**, activable si se configura una clave de cualquier proveedor OpenAI-compatible. `nan_base_url`, `nan_model` y `nan_reasoning_effort` son configuración, no código, así que el proveedor es intercambiable sin tocar una línea.
+- Proveedor de referencia: `https://api.nan.builders/v1`, modelo `deepseek-v4-flash`, key en `NAN_API_KEY` (nunca en el repo ni en el cliente). Límites conocidos del proveedor: 60 rpm, 7 concurrentes por key; requiere plan pago.
+- Con modelo activo, la generación usa `stream: true` (sin streaming el gateway puede cortar la request) y `reasoning_effort` configurable.
+- Estados explícitos y distintos: `no_configurada` (no hay clave; no es un fallo), `deshabilitada_por_error` (timeout, HTTP error o salida rechazada) y `aplicada`. En los tres estados el informe sale completo; el estado se informa una sola vez, sin presentar el informe como incompleto.
 
 ### RF8 — Seguridad de la aplicación
 - Upload: validación de tipo MIME + extensión + tamaño; archivo procesado en memoria/temporal con limpieza.
