@@ -35,7 +35,6 @@ opinion rather than what the evidence measures.
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -97,9 +96,10 @@ INTERNAL_LOGON_IMPACT = "medio"
 FILE_SERVER_HOST_PREFIXES = ("FS", "FILE")
 FILE_SERVER_IMPACT = "crítico"
 
-# D7 impact is scaled by the volume the detector measured, in decimal megabytes
-# (the same unit the detector's own rationale uses).
-EXFIL_CRITICAL_MEGABYTES = 200.0
+# D7 impact is scaled by the volume the detector measured, in bytes. The count
+# arrives in the finding's structured `measured_bytes` field; the detector's
+# Spanish rationale is wording and is never parsed.
+EXFIL_CRITICAL_BYTES = 200_000_000
 EXFIL_FALLBACK_IMPACT = "alto"
 
 # Confidence scoring: (threshold, points). Depth is the first matching row.
@@ -119,8 +119,6 @@ VALIDATION_CAP = "alto"
 # `D6` persistence events: `4698` creates a scheduled task, `7045` installs a service.
 D6_PERSISTENCE_VARIANTS = frozenset({"4698", "7045"})
 _VARIANT_ALIASES = {"iis-apppool-defaultapppool": "iis-apppool"}
-
-_MEASURED_MEGABYTES = re.compile(r"(\d[\d.]*,\d)\s*MB")
 
 
 @dataclass(frozen=True, slots=True)
@@ -168,21 +166,6 @@ def variant_of(finding: Finding) -> str:
     return finding.code
 
 
-def measured_megabytes(finding: Finding) -> float | None:
-    """Volume the D7 detector measured, read from its own rationale text.
-
-    The detector publishes the byte count only in the rationale (and in no
-    structured field), so the risk layer reads the number it already stated
-    instead of recomputing the proxy rows itself.
-    """
-    if finding.code != "D7":
-        return None
-    match = _MEASURED_MEGABYTES.search(finding.rationale)
-    if match is None:
-        return None
-    return float(match.group(1).replace(".", "").replace(",", "."))
-
-
 def external_origin(finding: Finding) -> bool:
     return any(ip_class(source_ip) == "external" for source_ip in finding.entities.source_ips)
 
@@ -211,8 +194,8 @@ def impact_of(finding: Finding) -> str:
     if finding.code == "D5" and targets_file_server(finding):
         return FILE_SERVER_IMPACT
     if finding.code == "D7":
-        megabytes = measured_megabytes(finding)
-        if megabytes is not None and megabytes >= EXFIL_CRITICAL_MEGABYTES:
+        measured = finding.measured_bytes
+        if measured is not None and measured >= EXFIL_CRITICAL_BYTES:
             return "crítico"
         return EXFIL_FALLBACK_IMPACT
     return base

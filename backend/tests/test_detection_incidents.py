@@ -80,6 +80,28 @@ def test_inc3_web_shell_command_execution(incidents) -> None:
     assert {"WEB01"} <= set(incident.entities.hosts)
 
 
+def test_the_web_shell_finding_cites_the_shell_request_that_answered_2xx(
+    incidents, events
+) -> None:
+    """INC-3: the process row alone is a single piece of evidence. The finding must
+    also cite the `HTTP_ACCESS` row that proves the shell endpoint answered 2xx."""
+    incident = incident_citing(incidents, "EVT-00599")
+    governing = next(
+        finding for finding in incident.findings if finding.id.startswith("D4:iis-apppool")
+    )
+
+    assert "EVT-00571" in governing.evidence
+    assert len(governing.evidence) >= 2
+
+    cited = events[events["Log_ID"].astype(str).isin(governing.evidence)]
+    web = cited[cited["event_family"] == "web"]
+    assert set(web["result_norm"]) == {"http_2xx"}
+    assert set(web["host_norm"]) == {"WEB01"}
+    assert "/uploads/test.aspx" in " ".join(web["command_norm"].astype(str))
+    assert "EVT-00573" not in governing.evidence
+    assert "EVT-00574" not in governing.evidence
+
+
 def test_inc4_staging_archive_and_proxy_exfiltration(incidents) -> None:
     """INC-4: 7z staging on WS-018 then 22 HTTPS POST to 198.51.100.88."""
     incident = incident_citing(incidents, "EVT-00428")
@@ -91,6 +113,8 @@ def test_inc4_staging_archive_and_proxy_exfiltration(incidents) -> None:
     exfiltration = next(finding for finding in incident.findings if finding.code == "D7")
     assert exfiltration.event_count == 22
     assert "198.51.100.88" in exfiltration.rationale
+    assert exfiltration.measured_bytes == 253_305_558
+    assert "measured_bytes" in exfiltration.to_dict()
     assert {"WS018"} <= set(incident.entities.hosts)
     assert {"rrojas"} <= set(incident.entities.users)
 

@@ -16,14 +16,15 @@ from __future__ import annotations
 from typing import Any
 
 from app.detection.context import count_es, hhmmss, minutes_between
+from app.detection.exfiltration import megabytes
 from app.detection.models import Entities, Finding, Incident
+from app.ingest.normalize import ip_class
 from app.risk.matrix import (
     CONFIDENCE_LEVELS,
     LEVEL_RANK,
     LEVELS,
     RiskScore,
     external_origin,
-    measured_megabytes,
     targets_file_server,
     variant_of,
 )
@@ -139,26 +140,56 @@ def _names(values: tuple[str, ...], empty: str) -> str:
     return text
 
 
-def _entity_detail(entities: Entities) -> str:
+def _entity_detail(entities: Entities, *, separate_origins: bool = False) -> str:
     details: list[str] = []
     for values, singular, plural in (
         (entities.users, "cuenta", "cuentas"),
         (entities.hosts, "equipo", "equipos"),
-        (entities.source_ips, "IP de origen", "IPs de origen"),
-        (entities.shares, "recurso compartido", "recursos compartidos"),
     ):
         if values:
             label = _plural(len(values), singular, plural)
             details.append(f"{count_es(len(values))} {label} ({_names(values, 'sin nombre')})")
+
+    if not separate_origins:
+        if entities.source_ips:
+            label = _plural(len(entities.source_ips), "IP de origen", "IPs de origen")
+            details.append(
+                f"{count_es(len(entities.source_ips))} {label} "
+                f"({_names(entities.source_ips, 'sin dirección')})"
+            )
+    else:
+        # FSD §4.8: `Source_IP` does not map to a host, and only external addresses
+        # are attacker infrastructure. An internal address seen in the evidence is
+        # an asset of the network, so presenting it as an origin would invent an
+        # attack source; here it is described as what the logs observed.
+        external_ips = tuple(ip for ip in entities.source_ips if ip_class(ip) == "external")
+        internal_ips = tuple(ip for ip in entities.source_ips if ip_class(ip) != "external")
+        if external_ips:
+            label = _plural(len(external_ips), "IP externa", "IPs externas")
+            details.append(
+                f"{count_es(len(external_ips))} {label} como origen del ataque "
+                f"({_names(external_ips, 'sin dirección')})"
+            )
+        if internal_ips:
+            label = _plural(
+                len(internal_ips),
+                "IP interna observada en la evidencia, no un origen del ataque",
+                "IPs internas observadas en la evidencia, no orígenes del ataque",
+            )
+            details.append(
+                f"{count_es(len(internal_ips))} {label} ({_names(internal_ips, 'sin dirección')})"
+            )
+
+    if entities.shares:
+        label = _plural(len(entities.shares), "recurso compartido", "recursos compartidos")
+        details.append(
+            f"{count_es(len(entities.shares))} {label} ({_names(entities.shares, 'sin nombre')})"
+        )
     return ", ".join(details) if details else "sin entidades identificadas"
 
 
-def _megabytes_text(value: float) -> str:
-    return f"{value:.1f} MB".replace(".", ",")
-
-
 def _context(finding: Finding) -> dict[str, Any]:
-    megabytes = measured_megabytes(finding)
+    measured = finding.measured_bytes
     return {
         "code": finding.code,
         "title": finding.title,
@@ -169,7 +200,7 @@ def _context(finding: Finding) -> dict[str, Any]:
         "ips": _names(finding.entities.source_ips, "origen no registrado"),
         "shares": _names(finding.entities.shares, "sin recurso compartido"),
         "origin": "externo" if external_origin(finding) else "interno",
-        "mb": _megabytes_text(megabytes) if megabytes is not None else "",
+        "mb": megabytes(measured) if measured is not None else "",
         "file_server": FILE_SERVER_NOTE if targets_file_server(finding) else "",
     }
 
@@ -277,7 +308,8 @@ def incident_justification(
         f"{count_es(incident.event_count)} eventos entre {hhmmss(incident.first_seen)} y "
         f"{hhmmss(incident.last_seen)} "
         f"({minutes_between(incident.first_seen, incident.last_seen)} min) del "
-        f"{incident.first_seen:%d/%m/%Y}, con {_entity_detail(incident.entities)}.",
+        f"{incident.first_seen:%d/%m/%Y}, con "
+        f"{_entity_detail(incident.entities, separate_origins=True)}.",
         _support_sentence(governing, governing_score, level, "el hallazgo que lo fija"),
     ]
     if validated_governing is not None:

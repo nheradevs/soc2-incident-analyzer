@@ -123,6 +123,7 @@ def build_finding(
     rationale: str,
     key: str,
     requires_validation: bool = False,
+    measured_bytes: int | None = None,
 ) -> Finding:
     """Turn a rule's own selection into a finding with exact evidence."""
     evidence_rows = ordered(rows.dropna(subset=["timestamp"]))
@@ -140,4 +141,5 @@ def build_finding(
         severity_hint=severity_hint,
         requires_validation=requires_validation,
         rationale=rationale,
+        measured_bytes=measured_bytes,
     )

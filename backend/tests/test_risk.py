@@ -175,6 +175,68 @@ def test_the_proxy_exfiltration_incident_cites_the_measured_byte_count(assessmen
     assert "22" in risk["justification"]
 
 
+def test_the_exfiltration_finding_carries_the_measured_byte_count(incidents) -> None:
+    finding = raw_finding(incidents, "EVT-00435", "D7")
+
+    assert finding.measured_bytes == 253_305_558
+    assert finding.to_dict()["measured_bytes"] == 253_305_558
+
+
+def test_the_exfiltration_level_does_not_depend_on_the_rationale_wording(incidents) -> None:
+    """The level is read from `measured_bytes`; rewording the prose changes nothing."""
+    finding = raw_finding(incidents, "EVT-00435", "D7")
+    baseline = classify([incident_with(finding)])[0]["findings"][0]["risk"]
+    reworded = dataclasses.replace(
+        finding, rationale="Redacción completamente distinta, sin ninguna cifra."
+    )
+    rerun = classify([incident_with(reworded)])[0]["findings"][0]["risk"]
+
+    assert baseline["level"] == LEVELS[0]
+    assert rerun == baseline
+
+
+def test_prose_megabytes_are_never_measured_as_volume(incidents) -> None:
+    """A rationale that still says 253,3 MB is not a measurement on its own."""
+    finding = raw_finding(incidents, "EVT-00435", "D7")
+    prose_only = dataclasses.replace(finding, measured_bytes=None)
+    risk = classify([incident_with(prose_only)])[0]["findings"][0]["risk"]
+
+    assert "253,3 MB" in prose_only.rationale
+    assert risk["impact"] == LEVELS[1]
+    assert risk["level"] != LEVELS[0]
+
+
+def test_the_web_shell_incident_is_critical(assessments) -> None:
+    incident = incident_citing(assessments, "EVT-00599")
+    governing = next(
+        finding
+        for finding in incident["findings"]
+        if finding["id"].startswith("D4:iis-apppool")
+    )
+
+    assert governing["risk"]["level"] == LEVELS[0]
+    assert incident["risk"]["level"] == LEVELS[0]
+    assert len(governing["evidence"]) >= 2
+    assert "EVT-00571" in governing["evidence"]
+
+
+def test_the_spray_incident_names_the_external_address_as_the_attack_origin(
+    assessments,
+) -> None:
+    """FSD §4.8: internal addresses are observed assets, never attacker origin."""
+    incident = incident_citing(assessments, "EVT-00057")
+    justification = incident["risk"]["justification"]
+    internal_ips = ("10.10.1.22", "10.10.1.31", "10.10.1.44", "10.10.2.15")
+
+    assert "IP externa como origen del ataque (203.0.113.74)" in justification
+    origin_part, _, internal_part = justification.partition(
+        "IPs internas observadas en la evidencia, no orígenes del ataque"
+    )
+    for internal_ip in internal_ips:
+        assert internal_ip not in origin_part
+        assert internal_ip in internal_part
+
+
 def test_every_incident_and_finding_gets_a_level_and_a_justification(assessments) -> None:
     assert assessments, "no hay incidentes clasificados"
 

@@ -93,6 +93,7 @@ def d7_exfiltration(events: pd.DataFrame | None) -> list[Finding]:
                             f"{slug(text(destination))}@{slug(text(user))}"
                             f"@{compact(block_start)}"
                         ),
+                        measured_bytes=total,
                     )
                 )
                 index = end + 1

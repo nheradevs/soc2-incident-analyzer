@@ -110,6 +110,10 @@ class Finding:
     severity_hint: str
     requires_validation: bool
     rationale: str
+    # What the detector measured, when the rule measures a quantity (D7 volume).
+    # A structured field, so no consumer has to recover the number from the prose
+    # of `rationale`, which is wording and may be reworded.
+    measured_bytes: int | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -125,6 +129,7 @@ class Finding:
             "severity_hint": self.severity_hint,
             "requires_validation": self.requires_validation,
             "rationale": self.rationale,
+            "measured_bytes": self.measured_bytes,
         }
 
 
