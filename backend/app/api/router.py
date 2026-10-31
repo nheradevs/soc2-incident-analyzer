@@ -1,4 +1,4 @@
-"""Upload and table-view endpoints (RF1).
+"""Upload, table-view and analysis endpoints (RF1, RF2, RF3, RF4).
 
 Every user-facing message here is Spanish, because it is rendered verbatim in
 the UI. Identifiers, comments and tests stay English.
@@ -8,16 +8,16 @@ from __future__ import annotations
 
 import io
 import math
-from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Any
 from zipfile import BadZipFile
 
-import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from openpyxl.utils.exceptions import InvalidFileException
 
+from app.api.analysis import Analysis, analyze
+from app.api.serialization import records
 from app.api.session import session_store
 from app.config import Settings, get_settings
 from app.ingest.loader import SchemaError, load_export
@@ -39,6 +39,8 @@ NO_SESSION_MESSAGE = (
     "Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo."
 )
 
+UNKNOWN_INCIDENT_MESSAGE = "No existe un incidente con el identificador «{incident_id}»."
+
 # Unreadable-workbook failures: a bad zip, a non-Excel zip, a broken sheet.
 _READ_ERRORS = (BadZipFile, InvalidFileException, KeyError, ValueError, OSError)
 
@@ -51,30 +53,6 @@ def _time_range(frame: pd.DataFrame) -> dict[str, str | None]:
     if stamps.empty:
         return {"start": None, "end": None}
     return {"start": stamps.min().isoformat(), "end": stamps.max().isoformat()}
-
-
-def _json_value(value: Any) -> Any:
-    """Convert one pandas scalar into a JSON-safe value (`NaN`/`NaT` -> null)."""
-    if value is None:
-        return None
-    if isinstance(value, (pd.Timestamp, datetime)):
-        return value.isoformat()
-    if pd.isna(value):
-        return None
-    if isinstance(value, np.bool_):
-        return bool(value)
-    if isinstance(value, np.integer):
-        return int(value)
-    if isinstance(value, np.floating):
-        return float(value)
-    return value
-
-
-def _records(frame: pd.DataFrame) -> list[dict[str, Any]]:
-    return [
-        {column: _json_value(value) for column, value in row.items()}
-        for row in frame.to_dict(orient="records")
-    ]
 
 
 def _search_mask(frame: pd.DataFrame, term: str) -> pd.Series:
@@ -211,10 +189,47 @@ def list_events(
     window = working.iloc[start : start + size]
 
     return {
-        "items": _records(window),
+        "items": records(window),
         "total": total,
         "page": current,
         "page_size": size,
         "total_pages": total_pages,
         "columns": list(working.columns),
     }
+
+
+def _current_analysis() -> Analysis:
+    """The session's analysis, computed on first use and cached for the session.
+
+    Detection is deterministic and pure over the frame, so caching cannot change
+    a result: it only avoids repeating the same work on every dashboard reload.
+    """
+    frame = session_store.frame()
+    if frame is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=NO_SESSION_MESSAGE
+        )
+
+    cached = session_store.analysis(frame)
+    if cached is None:
+        cached = analyze(frame)
+        session_store.store_analysis(frame, cached)
+    return cached
+
+
+@router.post("/analyze", tags=["analysis"])
+def analyze_export() -> dict[str, Any]:
+    """Detect and classify the loaded export; return the dashboard payload (RF4)."""
+    return _current_analysis().dashboard
+
+
+@router.get("/incidents/{incident_id}", tags=["analysis"])
+def get_incident(incident_id: str) -> dict[str, Any]:
+    """Risk block, findings and joined evidence rows of one incident (RF4)."""
+    incident = _current_analysis().incidents.get(incident_id)
+    if incident is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=UNKNOWN_INCIDENT_MESSAGE.format(incident_id=incident_id),
+        )
+    return incident

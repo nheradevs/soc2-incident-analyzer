@@ -213,6 +213,7 @@ Medición sobre los 715 registros reales. La columna "línea base" es lo que el 
   5. IPs externas en rangos de documentación (RFC 5737): sin atribución geográfica ni reputación real (sin TI).
   6. La columna `Severity` del SIEM es inconsistente y no se usa para clasificar.
   7. La ausencia de un hallazgo no prueba ausencia de compromiso: solo indica que no hay evidencia en este export.
+  8. El export **no declara el tipo de cuenta**. Las cuentas de servicio se identifican por convención de nombre, no por un atributo del dato: `CORP\svc_backup` se clasifica como humana y por lo tanto aparece en el ranking de cuentas. El dashboard declara qué cuentas excluye y por qué (anónimas y de máquina), pero no puede afirmar cuáles son de servicio sin un atributo que lo respalde.
 
 ---
 
@@ -270,9 +271,9 @@ backend/   FastAPI (Python 3.10+)
 | Endpoint | Método | Descripción |
 |---|---|---|
 | `/api/upload` | POST | Sube el .xlsx, devuelve esquema + stats + reporte de calidad de datos |
-| `/api/analyze` | POST | Corre normalización + detectores + correlación, devuelve incidentes |
+| `/api/analyze` | POST | Corre detectores + clasificación sobre el frame cargado y devuelve el payload del dashboard: cobertura, distribución por criticidad, serie horaria, top hosts, cuentas humanas (con exclusiones declaradas), salida por destino externo, tipos de ataque y lista de incidentes ordenada por severidad |
 | `/api/events` | GET | Eventos paginados (tabla), filtrable por `Log_ID` |
-| `/api/findings/{id}` | GET | Detalle de hallazgo + evidencia (`Log_ID`) |
+| `/api/incidents/{incident_id}` | GET | Drill-down de un incidente: clasificación, hallazgos con su justificación y las **filas reales** del export citadas como evidencia (unidas por `Log_ID`, 36 columnas) |
 | `/api/report` | POST | Genera informe (SSE con progreso, streaming IA) |
 | `/api/report/pdf` | GET | Descarga el PDF |
 
