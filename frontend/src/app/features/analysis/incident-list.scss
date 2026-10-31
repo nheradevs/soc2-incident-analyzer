@@ -1,0 +1,108 @@
+.incidents-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 1rem;
+  background: var(--mat-sys-surface-container-low);
+}
+
+h3 {
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+.incidents {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.incident-open {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-left: 4px solid var(--mat-sys-outline);
+  border-radius: 0.5rem;
+  background: var(--mat-sys-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.incident-open:hover,
+.incident-open:focus-visible {
+  background: var(--mat-sys-surface-container-high);
+}
+
+.incident-open--active {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 1px;
+}
+
+.incident[data-level='critical'] .incident-open {
+  border-left-color: #b3261e;
+}
+
+.incident[data-level='high'] .incident-open {
+  border-left-color: #b45309;
+}
+
+.incident[data-level='medium'] .incident-open {
+  border-left-color: #8a6100;
+}
+
+.incident[data-level='low'] .incident-open {
+  border-left-color: #2e7d32;
+}
+
+.incident-level {
+  min-width: 4.5rem;
+  font: var(--mat-sys-label-large);
+  text-transform: uppercase;
+}
+
+.incident-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.incident-title {
+  font: var(--mat-sys-title-small);
+}
+
+.incident-meta,
+.incident-categories {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.incident-validation {
+  margin-left: auto;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid #8a6100;
+  border-radius: 1rem;
+  color: #8a6100;
+  font: var(--mat-sys-label-medium);
+  white-space: nowrap;
+}
+
+.incident-chevron {
+  margin-left: auto;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.incident-empty {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}

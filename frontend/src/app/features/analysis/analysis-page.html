@@ -1,0 +1,49 @@
+<section class="analysis" aria-labelledby="analysis-title">
+  <header class="analysis-header">
+    <div>
+      <h2 id="analysis-title">Dashboard de análisis</h2>
+      <p class="analysis-subtitle">
+        Estadísticas y gráficos calculados sobre el export cargado: solo se muestra lo que el
+        export mide.
+      </p>
+    </div>
+    <a mat-stroked-button routerLink="/cargar">Volver a la carga</a>
+  </header>
+
+  @if (loading()) {
+    <p class="analysis-loading" role="status">
+      <mat-spinner diameter="24" aria-hidden="true" />
+      <span>Analizando el export cargado…</span>
+    </p>
+  } @else if (failure(); as problem) {
+    <div class="analysis-failure" role="alert">
+      <p class="analysis-failure-message">{{ problem.message }}</p>
+
+      @if (problem.status === 409) {
+        <p class="analysis-empty-hint">
+          El dashboard se calcula sobre el archivo cargado en el paso «Cargar». Cargue un export
+          .xlsx para ver indicadores, gráficos e incidentes.
+        </p>
+      }
+
+      <div class="analysis-failure-actions">
+        <button mat-flat-button type="button" (click)="reload()">Reintentar el análisis</button>
+        <a mat-stroked-button routerLink="/cargar">Ir al paso «Cargar»</a>
+      </div>
+    </div>
+  } @else if (payload(); as data) {
+    <app-dashboard-kpis [payload]="data" />
+    <app-coverage-panel [payload]="data" />
+    <app-dashboard-charts [payload]="data" />
+
+    <app-incident-list
+      [incidents]="data.incidents"
+      [selectedId]="selectedId()"
+      (selected)="select($event)"
+    />
+
+    @if (selectedId(); as incidentId) {
+      <app-incident-detail [incidentId]="incidentId" (closed)="closeDetail()" />
+    }
+  }
+</section>

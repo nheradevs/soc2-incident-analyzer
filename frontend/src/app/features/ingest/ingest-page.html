@@ -1,6 +1,15 @@
 <div class="ingest-page">
   <app-upload-panel (uploaded)="onUploaded($event)" />
 
+  @if (summary()) {
+    <div class="next-step">
+      <p class="next-step-hint">
+        El export ya está cargado en el servidor: puede pasar al dashboard de análisis.
+      </p>
+      <a mat-flat-button routerLink="/analisis" class="to-analysis">Ir al dashboard de análisis</a>
+    </div>
+  }
+
   @if (summary(); as data) {
     <app-quality-summary [summary]="data" />
   } @else {

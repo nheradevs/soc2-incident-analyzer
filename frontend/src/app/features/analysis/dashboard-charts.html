@@ -1,0 +1,108 @@
+<section class="charts" aria-labelledby="charts-title">
+  <h3 id="charts-title">Gráficos del export</h3>
+
+  <div class="chart-grid">
+    <article class="chart-card">
+      <h4>Eventos por hora</h4>
+      <app-chart-canvas
+        [config]="hourly()"
+        description="Eventos por hora del export analizado"
+      />
+      <p class="chart-values">{{ hourlyNote() }}</p>
+    </article>
+
+    <article class="chart-card">
+      <h4>Distribución por criticidad</h4>
+      <app-chart-canvas
+        [config]="levels()"
+        description="Incidentes por nivel de criticidad"
+      />
+      <ul class="chart-values chart-values--list">
+        @for (level of payload().risk.levels; track level.level_key) {
+          <li class="level-value">
+            <span>{{ level.level }}</span>
+            <span>{{ level.incidents }} incidentes · {{ level.findings }} hallazgos</span>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="chart-card">
+      <h4>Top hosts</h4>
+      <app-chart-canvas [config]="hosts()" description="Eventos por host, de mayor a menor" />
+      <ul class="chart-values chart-values--list">
+        @for (host of payload().charts.top_hosts; track host.host) {
+          <li class="host-value"><span>{{ host.host }}</span><span>{{ host.events }}</span></li>
+        } @empty {
+          <li class="host-value">El export no trae hosts.</li>
+        }
+      </ul>
+    </article>
+
+    <article class="chart-card">
+      <h4>Cuentas humanas más activas</h4>
+      <app-chart-canvas
+        [config]="users()"
+        description="Eventos por cuenta humana, de mayor a menor"
+      />
+      <ul class="chart-values chart-values--list">
+        @for (user of payload().charts.top_users; track user.user) {
+          <li class="user-value"><span>{{ user.user }}</span><span>{{ user.events }}</span></li>
+        } @empty {
+          <li class="user-value">El export no trae cuentas humanas.</li>
+        }
+      </ul>
+    </article>
+
+    <article class="chart-card">
+      <h4>Tipos de ataque detectados</h4>
+      <app-chart-canvas
+        [config]="attackTypes()"
+        description="Hallazgos por tipo de ataque detectado"
+      />
+      <ul class="chart-values chart-values--list">
+        @for (type of payload().charts.attack_types; track type.code) {
+          <li class="attack-type-value">
+            <span>{{ type.label }} ({{ type.code }})</span>
+            <span>{{ type.findings }} hallazgos · {{ type.events }} eventos</span>
+          </li>
+        } @empty {
+          <li class="attack-type-value">No se detectaron tipos de ataque en este export.</li>
+        }
+      </ul>
+    </article>
+
+    <article class="chart-card chart-card--wide">
+      <h4>Volumen saliente por destino externo</h4>
+      <app-chart-canvas [config]="outbound()" [description]="outboundDescription()" />
+
+      <ul class="chart-values chart-values--list outbound-list">
+        @for (destination of outboundItems(); track destination.destination + ':' + destination.port) {
+          <li
+            class="outbound-item"
+            [class.outbound-item--unknown]="!hasMeasuredBytes(destination)"
+          >
+            <span class="outbound-destination">
+              {{ destination.destination }}{{ portLabel(destination.port) }}
+            </span>
+            <span class="outbound-events">{{ destination.events }} eventos</span>
+            @if (hasMeasuredBytes(destination)) {
+              <span class="outbound-bytes">{{ bytesLabel(destination.bytes_out) }}</span>
+            } @else {
+              <span class="outbound-unknown">bytes no registrados en el export</span>
+            }
+          </li>
+        } @empty {
+          <li class="outbound-empty">No hay destinos externos en este export.</li>
+        }
+      </ul>
+
+      <p class="outbound-note">
+        Total medido hacia destinos externos: {{ bytesLabel(outboundTotal().total_bytes) }} en
+        {{ outboundTotal().total_events }} eventos. Los destinos marcados como «bytes no
+        registrados» no aportan volumen: sus filas no traen la columna de bytes salientes, así que
+        no se dibujan como 0 MB.
+      </p>
+    </article>
+  </div>
+</section>

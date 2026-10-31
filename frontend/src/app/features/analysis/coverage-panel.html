@@ -1,0 +1,41 @@
+<section class="coverage" aria-labelledby="coverage-title">
+  <h3 id="coverage-title">Cobertura de detección por categoría</h3>
+
+  <ul class="category-list">
+    @for (category of categories(); track category.category) {
+      <li class="category-row" [attr.data-covered]="category.findings > 0">
+        <span class="category-label">{{ category.label }}</span>
+        <span class="category-counts">
+          {{ category.findings }} hallazgos · {{ category.incidents }} incidentes
+        </span>
+        @if (category.findings === 0) {
+          <span class="category-uncovered">sin hallazgos en este export</span>
+        }
+      </li>
+    }
+  </ul>
+
+  <p class="coverage-summary">
+    {{ coveredCount() }} de {{ categories().length }} categorías con hallazgos. Sin hallazgos:
+    {{ uncoveredLabels() }}.
+  </p>
+
+  <h3>Cuentas excluidas del ranking de personas</h3>
+
+  <ul class="excluded-list">
+    @for (account of excludedAccounts(); track account.principal) {
+      <li class="excluded-account">
+        <span class="excluded-principal">{{ account.principal }}</span>
+        <span class="excluded-reason">{{ account.reason }}</span>
+        <span class="excluded-events">{{ account.events }} eventos</span>
+      </li>
+    } @empty {
+      <li class="excluded-account">Ninguna cuenta quedó excluida del ranking.</li>
+    }
+  </ul>
+
+  <p class="excluded-note">
+    Las cuentas anónimas y las de servicio o máquina no se cuentan como personas, pero se
+    informan aquí para que su tráfico no desaparezca del análisis.
+  </p>
+</section>

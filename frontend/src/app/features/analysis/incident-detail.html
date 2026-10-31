@@ -1,0 +1,98 @@
+<section class="incident-detail" aria-labelledby="detail-title">
+  @if (loading()) {
+    <p class="detail-loading" role="status">
+      <mat-spinner diameter="20" aria-hidden="true" />
+      <span>Cargando el detalle del incidente…</span>
+    </p>
+  } @else if (failure(); as problem) {
+    <div class="detail-failure" role="alert">
+      <p class="detail-failure-message">{{ problem.message }}</p>
+      <button mat-stroked-button type="button" (click)="close()">Cerrar detalle</button>
+    </div>
+  } @else if (detail(); as data) {
+    <header class="detail-header">
+      <h3 id="detail-title">{{ data.title }}</h3>
+
+      <p class="detail-classification">
+        <span class="detail-level" [attr.data-level]="data.risk.level_key">
+          Criticidad: {{ data.level }}
+        </span>
+        <span class="detail-impact">Impacto: {{ data.risk.impact }}</span>
+        <span class="detail-confidence">Confianza: {{ data.risk.confidence }}</span>
+        <span class="detail-id">{{ data.id }}</span>
+      </p>
+
+      <p class="detail-justification">{{ data.risk.justification }}</p>
+      <p class="detail-narrative">{{ data.narrative }}</p>
+
+      @if (data.requires_validation) {
+        <p class="detail-validation">
+          Requiere validación manual: el patrón también es compatible con actividad legítima.
+        </p>
+      }
+
+      <p class="detail-meta">
+        {{ data.event_count }} eventos · {{ formatTimestamp(data.first_seen) }} →
+        {{ formatTimestamp(data.last_seen) }} · {{ data.categories_labels.join(' · ') }}
+      </p>
+
+      <button mat-stroked-button type="button" (click)="close()">Cerrar detalle</button>
+    </header>
+
+    <h4>Hallazgos ({{ data.findings.length }})</h4>
+
+    @for (finding of data.findings; track finding.id) {
+      <article class="finding" [attr.data-level]="finding.risk.level_key">
+        <h5 class="finding-title">{{ finding.title }}</h5>
+        <p class="finding-meta">
+          {{ finding.code }} · {{ finding.category }} · {{ finding.event_count }} eventos ·
+          criticidad {{ finding.risk.level }} (impacto {{ finding.risk.impact }}, confianza
+          {{ finding.risk.confidence }})
+        </p>
+        <p class="finding-justification">{{ finding.risk.justification }}</p>
+        @if (finding.rationale) {
+          <p class="finding-rationale">{{ finding.rationale }}</p>
+        }
+        <p class="finding-evidence">
+          Log_ID citados: {{ finding.evidence.join(', ') }}
+        </p>
+      </article>
+    }
+
+    <h4>Evidencia</h4>
+
+    <p class="evidence-count">
+      {{ evidenceRows().length }} filas de evidencia distintas ({{ totalCitations() }} citas en
+      {{ data.findings.length }} hallazgos)
+    </p>
+
+    @if (data.evidence_missing.length > 0) {
+      <p class="evidence-missing" role="alert">
+        Atención: {{ data.evidence_missing.length }} Log_ID citados no existen en el export:
+        {{ data.evidence_missing.join(', ') }}. El hallazgo los cita igualmente, así que su
+        evidencia está incompleta.
+      </p>
+    }
+
+    <div class="evidence-scroll">
+      <table mat-table [dataSource]="evidenceRows()" class="evidence-table">
+        @for (column of evidenceColumns(); track column) {
+          <ng-container [matColumnDef]="column">
+            <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+            <td
+              mat-cell
+              *matCellDef="let row"
+              [class.evidence-log-id]="column === 'Log_ID'"
+              [title]="cellText(row, column)"
+            >
+              {{ cellText(row, column) }}
+            </td>
+          </ng-container>
+        }
+
+        <tr mat-header-row *matHeaderRowDef="evidenceColumns()"></tr>
+        <tr mat-row *matRowDef="let row; columns: evidenceColumns()"></tr>
+      </table>
+    </div>
+  }
+</section>

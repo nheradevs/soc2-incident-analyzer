@@ -1,0 +1,36 @@
+<section class="incidents-section" aria-labelledby="incidents-title">
+  <h3 id="incidents-title">Incidentes ordenados por criticidad</h3>
+
+  <ol class="incidents">
+    @for (incident of incidents(); track incident.id) {
+      <li class="incident" [attr.data-level]="incident.level_key" [attr.data-incident-id]="incident.id">
+        <button
+          type="button"
+          class="incident-open"
+          [class.incident-open--active]="selectedId() === incident.id"
+          [attr.aria-pressed]="selectedId() === incident.id"
+          (click)="selected.emit(incident.id)"
+        >
+          <span class="incident-level">{{ incident.level }}</span>
+
+          <span class="incident-body">
+            <span class="incident-title">{{ incident.title }}</span>
+            <span class="incident-meta">
+              {{ incident.id }} · {{ incident.event_count }} eventos ·
+              {{ formatTimestamp(incident.first_seen) }} → {{ formatTimestamp(incident.last_seen) }}
+            </span>
+            <span class="incident-categories">{{ incident.categories_labels.join(' · ') }}</span>
+          </span>
+
+          @if (incident.requires_validation) {
+            <span class="incident-validation">requiere validación</span>
+          }
+
+          <mat-icon class="incident-chevron" aria-hidden="true">chevron_right</mat-icon>
+        </button>
+      </li>
+    } @empty {
+      <li class="incident-empty">No se detectaron incidentes en este export.</li>
+    }
+  </ol>
+</section>

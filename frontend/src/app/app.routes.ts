@@ -7,5 +7,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/ingest/ingest-page').then((module) => module.IngestPage),
   },
+  {
+    path: 'analisis',
+    loadComponent: () =>
+      import('./features/analysis/analysis-page').then((module) => module.AnalysisPage),
+  },
   { path: '**', redirectTo: 'cargar' },
 ];
