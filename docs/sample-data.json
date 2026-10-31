@@ -1,0 +1,766 @@
+{
+  "analyze": {
+    "coverage": {
+      "events_analysed": 715,
+      "events_without_timestamp": 0,
+      "incidents": 6,
+      "findings": 46,
+      "time_window": {
+        "start": "2026-10-23T07:46:07",
+        "end": "2026-10-23T13:44:06",
+        "duration_minutes": 358,
+        "hours": 7
+      },
+      "categories": [
+        {
+          "category": "brute-force",
+          "label": "fuerza bruta",
+          "findings": 15,
+          "incidents": 2
+        },
+        {
+          "category": "suspicious-logon",
+          "label": "inicio de sesión sospechoso",
+          "findings": 3,
+          "incidents": 2
+        },
+        {
+          "category": "privilege-escalation",
+          "label": "escalamiento de privilegios",
+          "findings": 2,
+          "incidents": 2
+        },
+        {
+          "category": "command-execution",
+          "label": "ejecución de comandos",
+          "findings": 10,
+          "incidents": 5
+        },
+        {
+          "category": "lateral-movement",
+          "label": "movimiento lateral",
+          "findings": 1,
+          "incidents": 1
+        },
+        {
+          "category": "other-anomaly",
+          "label": "otra anomalía",
+          "findings": 15,
+          "incidents": 4
+        }
+      ],
+      "covered_categories": [
+        "brute-force",
+        "suspicious-logon",
+        "privilege-escalation",
+        "command-execution",
+        "lateral-movement",
+        "other-anomaly"
+      ],
+      "uncovered_categories": []
+    },
+    "risk": {
+      "levels": [
+        {
+          "level": "crítico",
+          "level_key": "critical",
+          "incidents": 4,
+          "findings": 4
+        },
+        {
+          "level": "alto",
+          "level_key": "high",
+          "incidents": 2,
+          "findings": 13
+        },
+        {
+          "level": "medio",
+          "level_key": "medium",
+          "incidents": 0,
+          "findings": 16
+        },
+        {
+          "level": "bajo",
+          "level_key": "low",
+          "incidents": 0,
+          "findings": 13
+        }
+      ],
+      "incidents_total": 6,
+      "findings_total": 46,
+      "affected": {
+        "users": [
+          "IIS APPPOOL\\DefaultAppPool",
+          "admin",
+          "aperez",
+          "backupsvc",
+          "dtorres",
+          "helpdesk",
+          "jlopez",
+          "mgarcia",
+          "rrojas",
+          "slopez"
+        ],
+        "hosts": [
+          "APPSRV01",
+          "DC01",
+          "FSSRV01",
+          "WEB01",
+          "WS014",
+          "WS018",
+          "WS023",
+          "WS031"
+        ],
+        "external_sources": [
+          "192.0.2.91",
+          "198.51.100.77",
+          "203.0.113.74"
+        ]
+      }
+    },
+    "charts": {
+      "events_by_hour": [
+        {
+          "hour": "2026-10-23T07:00:00",
+          "label": "07:00",
+          "events": 20
+        },
+        {
+          "hour": "2026-10-23T08:00:00",
+          "label": "08:00",
+          "events": 150
+        },
+        {
+          "hour": "2026-10-23T09:00:00",
+          "label": "09:00",
+          "events": 176
+        },
+        {
+          "hour": "2026-10-23T10:00:00",
+          "label": "10:00",
+          "events": 128
+        },
+        {
+          "hour": "2026-10-23T11:00:00",
+          "label": "11:00",
+          "events": 88
+        },
+        {
+          "hour": "2026-10-23T12:00:00",
+          "label": "12:00",
+          "events": 91
+        },
+        {
+          "hour": "2026-10-23T13:00:00",
+          "label": "13:00",
+          "events": 62
+        }
+      ],
+      "top_hosts": [
+        {
+          "host": "DC01",
+          "events": 121
+        },
+        {
+          "host": "FSSRV01",
+          "events": 91
+        },
+        {
+          "host": "WEB01",
+          "events": 87
+        },
+        {
+          "host": "APPSRV01",
+          "events": 83
+        },
+        {
+          "host": "WS018",
+          "events": 71
+        },
+        {
+          "host": "WS014",
+          "events": 68
+        },
+        {
+          "host": "DBSRV01",
+          "events": 64
+        },
+        {
+          "host": "WS023",
+          "events": 57
+        },
+        {
+          "host": "WS031",
+          "events": 48
+        },
+        {
+          "host": "WS022",
+          "events": 25
+        }
+      ],
+      "top_users": [
+        {
+          "user": "jlopez",
+          "events": 104
+        },
+        {
+          "user": "helpdesk",
+          "events": 94
+        },
+        {
+          "user": "aperez",
+          "events": 80
+        },
+        {
+          "user": "backupsvc",
+          "events": 76
+        },
+        {
+          "user": "rrojas",
+          "events": 72
+        },
+        {
+          "user": "slopez",
+          "events": 70
+        },
+        {
+          "user": "mgarcia",
+          "events": 66
+        },
+        {
+          "user": "dtorres",
+          "events": 57
+        },
+        {
+          "user": "mruiz",
+          "events": 34
+        },
+        {
+          "user": "svc_backup",
+          "events": 24
+        },
+        {
+          "user": "admin",
+          "events": 16
+        }
+      ],
+      "excluded_accounts": [
+        {
+          "principal": "-",
+          "kind": "anonymous",
+          "reason": "principal anónimo",
+          "events": 21
+        },
+        {
+          "principal": "IIS APPPOOL\\DefaultAppPool",
+          "kind": "machine",
+          "reason": "cuenta de servicio o de máquina",
+          "events": 1
+        }
+      ],
+      "attack_types": [
+        {
+          "code": "D6",
+          "label": "Otra anomalía",
+          "findings": 14,
+          "events": 29
+        },
+        {
+          "code": "D1a",
+          "label": "Fuerza bruta dirigida",
+          "findings": 10,
+          "events": 43
+        },
+        {
+          "code": "D4",
+          "label": "Ejecución de comandos y procesos",
+          "findings": 10,
+          "events": 17
+        },
+        {
+          "code": "D2",
+          "label": "Inicio de sesión sospechoso",
+          "findings": 3,
+          "events": 3
+        },
+        {
+          "code": "D1c",
+          "label": "Exposición externa",
+          "findings": 2,
+          "events": 37
+        },
+        {
+          "code": "D1d",
+          "label": "Compromiso posterior al ataque",
+          "findings": 2,
+          "events": 39
+        },
+        {
+          "code": "D3",
+          "label": "Escalamiento de privilegios",
+          "findings": 2,
+          "events": 2
+        },
+        {
+          "code": "D1b",
+          "label": "Password spray",
+          "findings": 1,
+          "events": 33
+        },
+        {
+          "code": "D5",
+          "label": "Movimiento lateral",
+          "findings": 1,
+          "events": 3
+        },
+        {
+          "code": "D7",
+          "label": "Exfiltración",
+          "findings": 1,
+          "events": 22
+        }
+      ],
+      "outbound_by_destination": {
+        "items": [
+          {
+            "destination": "198.51.100.88",
+            "port": 443,
+            "events": 22,
+            "events_with_bytes": 22,
+            "bytes_out": 253305558
+          },
+          {
+            "destination": "203.0.113.88",
+            "port": 443,
+            "events": 1,
+            "events_with_bytes": 0,
+            "bytes_out": 0
+          }
+        ],
+        "total_events": 23,
+        "total_bytes": 253305558
+      }
+    },
+    "incidents": [
+      {
+        "id": "INC-20261023-0820",
+        "title": "Fuerza bruta → inicio de sesión sospechoso → escalamiento de privilegios",
+        "level": "crítico",
+        "level_key": "critical",
+        "categories": [
+          "brute-force",
+          "suspicious-logon",
+          "privilege-escalation"
+        ],
+        "categories_labels": [
+          "fuerza bruta",
+          "inicio de sesión sospechoso",
+          "escalamiento de privilegios"
+        ],
+        "first_seen": "2026-10-23T08:20:12",
+        "last_seen": "2026-10-23T08:40:00",
+        "event_count": 42,
+        "entities": {
+          "users": [
+            "aperez",
+            "backupsvc",
+            "dtorres",
+            "helpdesk",
+            "jlopez",
+            "mgarcia",
+            "rrojas",
+            "slopez"
+          ],
+          "hosts": [
+            "APPSRV01",
+            "DC01",
+            "WS014",
+            "WS023",
+            "WS031"
+          ],
+          "source_ips": [
+            "10.10.1.22",
+            "10.10.1.31",
+            "10.10.1.44",
+            "10.10.2.15",
+            "10.10.2.24",
+            "10.10.3.18",
+            "203.0.113.74"
+          ],
+          "shares": []
+        },
+        "requires_validation": false
+      },
+      {
+        "id": "INC-20261023-0902",
+        "title": "Fuerza bruta → inicio de sesión sospechoso → escalamiento de privilegios → ejecución de comandos → movimiento lateral → otra anomalía",
+        "level": "crítico",
+        "level_key": "critical",
+        "categories": [
+          "brute-force",
+          "suspicious-logon",
+          "privilege-escalation",
+          "command-execution",
+          "lateral-movement",
+          "other-anomaly"
+        ],
+        "categories_labels": [
+          "fuerza bruta",
+          "inicio de sesión sospechoso",
+          "escalamiento de privilegios",
+          "ejecución de comandos",
+          "movimiento lateral",
+          "otra anomalía"
+        ],
+        "first_seen": "2026-10-23T09:02:00",
+        "last_seen": "2026-10-23T09:21:00",
+        "event_count": 15,
+        "entities": {
+          "users": [
+            "admin"
+          ],
+          "hosts": [
+            "APPSRV01",
+            "FSSRV01"
+          ],
+          "source_ips": [
+            "10.10.2.15",
+            "198.51.100.77"
+          ],
+          "shares": []
+        },
+        "requires_validation": false
+      },
+      {
+        "id": "INC-20261023-1042",
+        "title": "Ejecución de comandos → otra anomalía",
+        "level": "crítico",
+        "level_key": "critical",
+        "categories": [
+          "command-execution",
+          "other-anomaly"
+        ],
+        "categories_labels": [
+          "ejecución de comandos",
+          "otra anomalía"
+        ],
+        "first_seen": "2026-10-23T10:42:00",
+        "last_seen": "2026-10-23T10:49:18",
+        "event_count": 23,
+        "entities": {
+          "users": [
+            "rrojas"
+          ],
+          "hosts": [
+            "WS018"
+          ],
+          "source_ips": [
+            "10.10.1.31"
+          ],
+          "shares": []
+        },
+        "requires_validation": false
+      },
+      {
+        "id": "INC-20261023-1210",
+        "title": "Ejecución de comandos",
+        "level": "crítico",
+        "level_key": "critical",
+        "categories": [
+          "command-execution"
+        ],
+        "categories_labels": [
+          "ejecución de comandos"
+        ],
+        "first_seen": "2026-10-23T12:10:00",
+        "last_seen": "2026-10-23T12:15:00",
+        "event_count": 4,
+        "entities": {
+          "users": [
+            "IIS APPPOOL\\DefaultAppPool"
+          ],
+          "hosts": [
+            "WEB01"
+          ],
+          "source_ips": [
+            "192.0.2.91"
+          ],
+          "shares": []
+        },
+        "requires_validation": false
+      },
+      {
+        "id": "INC-20261023-0936",
+        "title": "Ejecución de comandos → otra anomalía",
+        "level": "alto",
+        "level_key": "high",
+        "categories": [
+          "command-execution",
+          "other-anomaly"
+        ],
+        "categories_labels": [
+          "ejecución de comandos",
+          "otra anomalía"
+        ],
+        "first_seen": "2026-10-23T09:36:00",
+        "last_seen": "2026-10-23T09:43:00",
+        "event_count": 19,
+        "entities": {
+          "users": [
+            "backupsvc"
+          ],
+          "hosts": [
+            "FSSRV01",
+            "WS023"
+          ],
+          "source_ips": [
+            "10.10.1.44"
+          ],
+          "shares": [
+            "\\\\FS-SRV01\\Finance"
+          ]
+        },
+        "requires_validation": true
+      },
+      {
+        "id": "INC-20261023-1137",
+        "title": "Ejecución de comandos → otra anomalía",
+        "level": "alto",
+        "level_key": "high",
+        "categories": [
+          "command-execution",
+          "other-anomaly"
+        ],
+        "categories_labels": [
+          "ejecución de comandos",
+          "otra anomalía"
+        ],
+        "first_seen": "2026-10-23T11:37:00",
+        "last_seen": "2026-10-23T12:04:00",
+        "event_count": 7,
+        "entities": {
+          "users": [
+            "helpdesk"
+          ],
+          "hosts": [
+            "APPSRV01"
+          ],
+          "source_ips": [
+            "10.10.3.18"
+          ],
+          "shares": []
+        },
+        "requires_validation": false
+      }
+    ]
+  },
+  "incident_detail_excerpt": {
+    "id": "INC-20261023-0902",
+    "title": "Fuerza bruta → inicio de sesión sospechoso → escalamiento de privilegios → ejecución de comandos → movimiento lateral → otra anomalía",
+    "level": "crítico",
+    "first_seen": "2026-10-23T09:02:00",
+    "last_seen": "2026-10-23T09:21:00",
+    "event_count": 15,
+    "requires_validation": false,
+    "entities": {
+      "users": [
+        "admin"
+      ],
+      "hosts": [
+        "APPSRV01",
+        "FSSRV01"
+      ],
+      "source_ips": [
+        "10.10.2.15",
+        "198.51.100.77"
+      ],
+      "shares": []
+    },
+    "risk": {
+      "level": "crítico",
+      "level_key": "critical",
+      "impact": "crítico",
+      "confidence": "alta",
+      "event_count": 15,
+      "requires_validation": false,
+      "justification": "Criticidad crítico: el incidente hereda el nivel del hallazgo más grave (D1d, «Inicio de sesión exitoso después de fallos desde 198.51.100.77», criticidad crítico): acceso exitoso posterior a fallos previos sobre admin desde 198.51.100.77: compromiso de credenciales confirmado. Agrupa 20 hallazgos correlacionados y 15 eventos entre 09:02:00 y 09:21:00 (19 min) del 23/10/2026, con 1 cuenta (admin), 2 equipos (APPSRV01, FSSRV01), 1 IP externa como origen del ataque (198.51.100.77), 1 IP interna observada en la evidencia, no un origen del ataque (10.10.2.15). Alcanza el nivel máximo: el impacto es crítico y el hallazgo que lo fija lo sostiene con 5 eventos y confianza alta."
+    },
+    "findings": [
+      {
+        "id": "D1a:admin@20261023T090200",
+        "code": "D1a",
+        "category": "brute-force",
+        "title": "Fuerza bruta dirigida contra la cuenta admin",
+        "risk": {
+          "level": "medio",
+          "level_key": "medium",
+          "impact": "medio",
+          "confidence": "alta",
+          "event_count": 4,
+          "requires_validation": false,
+          "justification": "Criticidad medio: impacto medio × confianza alta en la evidencia. Impacto: 4 intentos fallidos de inicio de sesión sobre la cuenta admin, sin ningún acceso exitoso registrado. Evidencia: 4 eventos de evidencia (EVT-00174–EVT-00180) sobre 1 cuenta (admin), 1 equipo (APPSRV01), 1 IP de origen (198.51.100.77), con origen externo, entre 09:02:00 y 09:05:00 del 23/10/2026. No alcanza «alto»: el impacto potencial es medio y no alcanza el de «alto»."
+        }
+      },
+      {
+        "id": "D1c:198-51-100-77@appsrv01@20261023T090200",
+        "code": "D1c",
+        "category": "brute-force",
+        "title": "Intento de inicio de sesión fallido desde la IP externa 198.51.100.77",
+        "risk": {
+          "level": "medio",
+          "level_key": "medium",
+          "impact": "medio",
+          "confidence": "alta",
+          "event_count": 4,
+          "requires_validation": false,
+          "justification": "Criticidad medio: impacto medio × confianza alta en la evidencia. Impacto: fallos de inicio de sesión desde el origen externo 198.51.100.77: la línea base medida no registra ningún fallo desde fuera de la red interna. Evidencia: 4 eventos de evidencia (EVT-00174–EVT-00180) sobre 1 cuenta (admin), 1 equipo (APPSRV01), 1 IP de origen (198.51.100.77), con origen externo, entre 09:02:00 y 09:05:00 del 23/10/2026. No alcanza «alto»: el impacto potencial es medio y no alcanza el de «alto»."
+        }
+      },
+      {
+        "id": "D1d:admin@20261023T090600",
+        "code": "D1d",
+        "category": "brute-force",
+        "title": "Inicio de sesión exitoso después de fallos desde 198.51.100.77",
+        "risk": {
+          "level": "crítico",
+          "level_key": "critical",
+          "impact": "crítico",
+          "confidence": "alta",
+          "event_count": 5,
+          "requires_validation": false,
+          "justification": "Criticidad crítico: impacto crítico × confianza alta en la evidencia. Impacto: acceso exitoso posterior a fallos previos sobre admin desde 198.51.100.77: compromiso de credenciales confirmado. Evidencia: 5 eventos de evidencia (EVT-00174–EVT-00188) sobre 1 cuenta (admin), 1 equipo (APPSRV01), 1 IP de origen (198.51.100.77), con origen externo, entre 09:02:00 y 09:06:00 del 23/10/2026. Alcanza el nivel máximo: el impacto es crítico y la evidencia lo sostiene con 5 eventos y confianza alta."
+        }
+      }
+    ],
+    "evidence_sample": [
+      {
+        "Log_ID": "EVT-00174",
+        "Timestamp": "2026-10-23 09:02:00",
+        "Hostname": "APP-SRV01",
+        "Event_ID": 4625,
+        "User": "CORP\\admin",
+        "Source_IP": "198.51.100.77",
+        "Destination": "APP-SRV01",
+        "Log_Source": "Security",
+        "Event_Description": "An account failed to log on (LogonType=10; RDP)",
+        "Process_CommandLine": null,
+        "Result": "Failure",
+        "Severity": "Medium",
+        "event_id_norm": "4625",
+        "event_family": "windows",
+        "timestamp": "2026-10-23T09:02:00",
+        "host_norm": "APPSRV01",
+        "principal_type": "human",
+        "user_norm": "admin",
+        "ip_class": "external",
+        "dest_type": "host",
+        "dest_host": "APPSRV01",
+        "dest_port": null,
+        "result_norm": "failure",
+        "is_failure": true,
+        "logon_type": 10,
+        "lateral_source": null,
+        "task_name": null,
+        "service_name": null,
+        "image_path": null,
+        "file_path": null,
+        "command_norm": "",
+        "bytes_out": null,
+        "uri": null,
+        "script_path": null,
+        "payload_redacted": false,
+        "share": null
+      },
+      {
+        "Log_ID": "EVT-00175",
+        "Timestamp": "2026-10-23 09:03:00",
+        "Hostname": "APP-SRV01",
+        "Event_ID": 4625,
+        "User": "CORP\\admin",
+        "Source_IP": "198.51.100.77",
+        "Destination": "APP-SRV01",
+        "Log_Source": "Security",
+        "Event_Description": "An account failed to log on (LogonType=10; RDP)",
+        "Process_CommandLine": null,
+        "Result": "Failure",
+        "Severity": "Medium",
+        "event_id_norm": "4625",
+        "event_family": "windows",
+        "timestamp": "2026-10-23T09:03:00",
+        "host_norm": "APPSRV01",
+        "principal_type": "human",
+        "user_norm": "admin",
+        "ip_class": "external",
+        "dest_type": "host",
+        "dest_host": "APPSRV01",
+        "dest_port": null,
+        "result_norm": "failure",
+        "is_failure": true,
+        "logon_type": 10,
+        "lateral_source": null,
+        "task_name": null,
+        "service_name": null,
+        "image_path": null,
+        "file_path": null,
+        "command_norm": "",
+        "bytes_out": null,
+        "uri": null,
+        "script_path": null,
+        "payload_redacted": false,
+        "share": null
+      },
+      {
+        "Log_ID": "EVT-00178",
+        "Timestamp": "2026-10-23 09:04:00",
+        "Hostname": "APP-SRV01",
+        "Event_ID": 4625,
+        "User": "CORP\\admin",
+        "Source_IP": "198.51.100.77",
+        "Destination": "APP-SRV01",
+        "Log_Source": "Security",
+        "Event_Description": "An account failed to log on (LogonType=10; RDP)",
+        "Process_CommandLine": null,
+        "Result": "Failure",
+        "Severity": "Medium",
+        "event_id_norm": "4625",
+        "event_family": "windows",
+        "timestamp": "2026-10-23T09:04:00",
+        "host_norm": "APPSRV01",
+        "principal_type": "human",
+        "user_norm": "admin",
+        "ip_class": "external",
+        "dest_type": "host",
+        "dest_host": "APPSRV01",
+        "dest_port": null,
+        "result_norm": "failure",
+        "is_failure": true,
+        "logon_type": 10,
+        "lateral_source": null,
+        "task_name": null,
+        "service_name": null,
+        "image_path": null,
+        "file_path": null,
+        "command_norm": "",
+        "bytes_out": null,
+        "uri": null,
+        "script_path": null,
+        "payload_redacted": false,
+        "share": null
+      }
+    ],
+    "evidence_log_ids": [
+      "EVT-00174",
+      "EVT-00175",
+      "EVT-00178",
+      "EVT-00180",
+      "EVT-00188",
+      "EVT-00193",
+      "EVT-00198",
+      "EVT-00207",
+      "EVT-00214",
+      "EVT-00222",
+      "EVT-00225",
+      "EVT-00227"
+    ]
+  }
+}
