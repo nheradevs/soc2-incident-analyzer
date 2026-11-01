@@ -13,7 +13,7 @@ import {
 } from '../../core/testing/report-fixtures';
 
 const NO_SESSION_MESSAGE =
-  'Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo.';
+  'Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo.';
 
 describe('ReportPage', () => {
   let fixture: ComponentFixture<ReportPage>;
@@ -49,6 +49,30 @@ describe('ReportPage', () => {
     fixture.detectChanges();
   }
 
+
+  it('keeps the failure card on screen while a retry is in flight', () => {
+    http
+      .expectOne('/api/report')
+      .flush({ detail: NO_SESSION_MESSAGE }, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+
+    const retry = element().querySelector('.report-failure-actions button') as HTMLButtonElement;
+    retry.click();
+    fixture.detectChanges();
+
+    expect(element().querySelector('.report-failure')).not.toBeNull();
+    const busy = element().querySelector('.report-failure-actions button') as HTMLButtonElement;
+    expect(busy.disabled).toBe(true);
+    expect(busy.textContent).toContain('Reintentando');
+
+    http
+      .expectOne('/api/report')
+      .flush({ detail: NO_SESSION_MESSAGE }, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+
+    const after = element().querySelector('.report-failure-actions button') as HTMLButtonElement;
+    expect(after.disabled).toBe(false);
+  });
   it('shows a loading state while the report is being composed', () => {
     expect(element().textContent).toContain('Generando el informe');
     expect(element().querySelector('.report-loading')?.getAttribute('role')).toBe('status');
@@ -176,7 +200,7 @@ describe('ReportPage', () => {
     // blob body of the PDF request; the decoding itself is covered in
     // ReportApiService's spec.
     const detail =
-      'Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo.';
+      'Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo.';
     const api = TestBed.inject(ReportApiService);
     spyOn(api, 'downloadReportPdf').and.returnValue(
       throwError(() => ({ status: 409, message: detail })),

@@ -39,6 +39,8 @@ export class AnalysisPage implements OnInit, OnDestroy {
   readonly payload = signal<DashboardPayload | null>(null);
   readonly loading = signal(true);
   readonly failure = signal<ApiFailure | null>(null);
+  /** Keeps the failure card on screen while a retry is in flight. */
+  readonly retrying = signal(false);
   readonly selectedId = signal<string | null>(null);
 
   /** Labels of the KPI skeletons, so the loading state is Spanish too. */
@@ -95,7 +97,8 @@ export class AnalysisPage implements OnInit, OnDestroy {
   }
 
   reload(): void {
-    this.load();
+    this.retrying.set(true);
+    this.load(true);
   }
 
   select(incidentId: string): void {
@@ -106,21 +109,27 @@ export class AnalysisPage implements OnInit, OnDestroy {
     this.selectedId.set(null);
   }
 
-  private load(): void {
+  private load(keepFailureOnStart = false): void {
     this.subscription?.unsubscribe();
-    this.loading.set(true);
-    this.failure.set(null);
-    this.payload.set(null);
-    this.selectedId.set(null);
+    if (!keepFailureOnStart) {
+      this.loading.set(true);
+      this.failure.set(null);
+      this.payload.set(null);
+      this.selectedId.set(null);
+    }
 
     this.subscription = this.api.analyze().subscribe({
       next: (payload: DashboardPayload) => {
         this.payload.set(payload);
+        this.failure.set(null);
         this.loading.set(false);
+        this.retrying.set(false);
       },
       error: (failure: ApiFailure) => {
         this.failure.set(failure);
+        this.payload.set(null);
         this.loading.set(false);
+        this.retrying.set(false);
       },
     });
   }

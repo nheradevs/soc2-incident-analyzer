@@ -34,6 +34,8 @@ export class ReportPage implements OnInit, OnDestroy {
   readonly payload = signal<ReportPayload | null>(null);
   readonly loading = signal(true);
   readonly failure = signal<ApiFailure | null>(null);
+  /** Keeps the failure card on screen while a retry is in flight. */
+  readonly retrying = signal(false);
   readonly version = signal<ReportVersionKey>('ejecutiva');
   readonly downloading = signal(false);
   readonly downloadFailure = signal<ApiFailure | null>(null);
@@ -76,7 +78,8 @@ export class ReportPage implements OnInit, OnDestroy {
   }
 
   reload(): void {
-    this.load();
+    this.retrying.set(true);
+    this.load(true);
   }
 
   selectVersion(key: string): void {
@@ -111,22 +114,28 @@ export class ReportPage implements OnInit, OnDestroy {
     });
   }
 
-  private load(): void {
+  private load(keepFailureOnStart = false): void {
     this.reportSubscription?.unsubscribe();
-    this.loading.set(true);
-    this.failure.set(null);
-    this.downloadFailure.set(null);
-    this.payload.set(null);
-    this.version.set('ejecutiva');
+    if (!keepFailureOnStart) {
+      this.loading.set(true);
+      this.failure.set(null);
+      this.downloadFailure.set(null);
+      this.payload.set(null);
+      this.version.set('ejecutiva');
+    }
 
     this.reportSubscription = this.api.report().subscribe({
       next: (payload: ReportPayload) => {
         this.payload.set(payload);
+        this.failure.set(null);
         this.loading.set(false);
+        this.retrying.set(false);
       },
       error: (failure: ApiFailure) => {
         this.failure.set(failure);
+        this.payload.set(null);
         this.loading.set(false);
+        this.retrying.set(false);
       },
     });
   }

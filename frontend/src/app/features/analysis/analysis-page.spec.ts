@@ -8,7 +8,7 @@ import { incidentDetailFixture } from '../../core/testing/analysis-fixtures';
 import { dashboardPayloadFixture } from '../../core/testing/analysis-fixtures';
 
 const NO_SESSION_MESSAGE =
-  'Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo.';
+  'Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo.';
 
 describe('AnalysisPage', () => {
   let fixture: ComponentFixture<AnalysisPage>;
@@ -60,6 +60,33 @@ describe('AnalysisPage', () => {
     const backLink = failure.querySelector('a') as HTMLAnchorElement;
     expect(backLink.getAttribute('href')).toBe('/cargar');
     expect(element().querySelector('app-dashboard-kpis')).toBeNull();
+  });
+
+  it('keeps the failure card on screen while a retry is in flight', () => {
+    http
+      .expectOne('/api/analyze')
+      .flush({ detail: NO_SESSION_MESSAGE }, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+
+    const retry = element().querySelector('.analysis-failure-actions button') as HTMLButtonElement;
+    retry.click();
+    fixture.detectChanges();
+
+    // The whole dashboard skeleton must not replace the error card on a retry.
+    expect(element().querySelector('.analysis-failure')).not.toBeNull();
+    expect(element().querySelector('.analysis-loading')).toBeNull();
+    const busy = element().querySelector('.analysis-failure-actions button') as HTMLButtonElement;
+    expect(busy.disabled).toBe(true);
+    expect(busy.textContent).toContain('Reintentando');
+
+    http
+      .expectOne('/api/analyze')
+      .flush({ detail: NO_SESSION_MESSAGE }, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+
+    const after = element().querySelector('.analysis-failure-actions button') as HTMLButtonElement;
+    expect(after.disabled).toBe(false);
+    expect(after.textContent).toContain('Reintentar el análisis');
   });
 
   it('renders the KPIs measured by the payload, with no invented section', () => {

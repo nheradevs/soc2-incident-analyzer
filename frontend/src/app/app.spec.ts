@@ -46,6 +46,13 @@ describe('App', () => {
       'https://github.com/nheradevs',
       'https://www.linkedin.com/in/karen-gil-g',
     ]);
+
+    const external = Array.from(footer.querySelectorAll('a'));
+    for (const link of external) {
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toContain('noopener');
+      expect(link.getAttribute('rel')).toContain('noreferrer');
+    }
   });
 
   it('routes the root path to the Cargar step', () => {
