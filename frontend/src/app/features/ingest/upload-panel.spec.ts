@@ -36,6 +36,45 @@ describe('UploadPanel', () => {
     return input;
   }
 
+
+  it('does not offer a retry when the rejection cannot change on a second attempt', () => {
+    const file = new File(['nope'], 'informe.xlsx');
+    selectFile(fileInput(), file);
+    http
+      .expectOne('/api/upload')
+      .flush({ detail: 'El contenido del archivo no es un libro .xlsx válido.' }, { status: 400, statusText: 'Bad Request' });
+    fixture.detectChanges();
+
+    const labels = Array.from(fixture.nativeElement.querySelectorAll('.alert__actions button')).map(
+      (button) => (button as HTMLElement).textContent?.trim(),
+    );
+    expect(labels).toEqual(['Elegir otro archivo']);
+  });
+
+  it('offers a retry for a transient failure and re-sends the same file', () => {
+    const file = new File(['content'], 'SOC_L2_Logs.xlsx');
+    selectFile(fileInput(), file);
+    http
+      .expectOne('/api/upload')
+      .flush({ detail: 'No se pudo leer el archivo.' }, { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    const retry = fixture.nativeElement.querySelector('.alert__actions button') as HTMLButtonElement;
+    expect(retry.textContent).toContain('Reintentar la carga');
+    expect(retry.querySelector('.btn__busy')?.textContent).toContain('Reintentando');
+
+    retry.click();
+    fixture.detectChanges();
+
+    expect(retry.getAttribute('aria-busy')).toBe('true');
+    expect(retry.disabled).toBe(true);
+
+    const second = http.expectOne('/api/upload');
+    const body = second.request.body as FormData;
+    expect((body.get('file') as File).name).toBe('SOC_L2_Logs.xlsx');
+    second.flush(uploadResponseFixture());
+    fixture.detectChanges();
+  });
   it('exposes an accessible label and restricts the picker to .xlsx files', () => {
     const input = fileInput();
     expect(input.getAttribute('accept')).toBe('.xlsx');

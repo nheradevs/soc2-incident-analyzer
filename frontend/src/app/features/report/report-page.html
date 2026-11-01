@@ -66,13 +66,14 @@
 
       <div class="alert__actions report-failure-actions">
         <button
-          class="btn btn--primary btn--sm"
+          class="btn btn--primary btn--sm btn--swap"
           type="button"
           (click)="reload()"
           [disabled]="retrying()"
           [attr.aria-busy]="retrying()"
         >
-          Reintentar
+          <span class="btn__label">Reintentar el informe</span>
+          <span class="btn__busy" aria-hidden="true">Reintentando…</span>
         </button>
         <a class="btn btn--ghost btn--sm" routerLink="/cargar">Ir a la carga</a>
         <a class="btn btn--quiet btn--sm" routerLink="/analisis">Volver al análisis</a>

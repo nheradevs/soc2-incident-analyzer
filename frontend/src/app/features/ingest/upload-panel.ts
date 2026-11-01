@@ -1,7 +1,7 @@
-import { Component, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { ApiFailure, UploadResponse } from '../../core/models/ingest.models';
+import { ApiFailure, UploadResponse, isRetryableFailure } from '../../core/models/ingest.models';
 import { IngestApiService } from '../../core/services/ingest-api.service';
 
 /**
@@ -27,6 +27,15 @@ export class UploadPanel {
   readonly dragging = signal(false);
   readonly failure = signal<ApiFailure | null>(null);
   readonly selectedFileName = signal<string | null>(null);
+
+  /** The last file the user handed over, so a retry re-sends that same file. */
+  private lastFile: File | null = null;
+
+  /** A retry only makes sense when the failure could have a different outcome. */
+  readonly canRetry = computed(() => {
+    const failure = this.failure();
+    return failure !== null && isRetryableFailure(failure);
+  });
 
   onFileInputChange(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -58,6 +67,16 @@ export class UploadPanel {
     this.fileInput().nativeElement.click();
   }
 
+  /** Re-sends the exact file that failed, without making the user pick it again. */
+  retryUpload(): void {
+    const file = this.lastFile;
+    if (file !== null) {
+      // Keep the failure on screen: clearing it would unmount the very button
+      // that has to show the retry is running.
+      this.upload(file, true);
+    }
+  }
+
   /** Compact window of the loaded export, e.g. `23/10/2026 07:46 a 13:44`. */
   fileWindow(response: UploadResponse): string {
     const start = response.time_range.start;
@@ -74,16 +93,20 @@ export class UploadPanel {
     return `${parts[2]}/${parts[1]}/${parts[0]} ${startTime.slice(0, 5)} a ${endTime.slice(0, 5)}`;
   }
 
-  private upload(file: File): void {
+  private upload(file: File, keepFailureOnStart = false): void {
     if (this.busy()) {
       return;
     }
     this.busy.set(true);
-    this.failure.set(null);
+    if (!keepFailureOnStart) {
+      this.failure.set(null);
+    }
+    this.lastFile = file;
     this.selectedFileName.set(file.name);
 
     this.api.upload(file).subscribe({
       next: (response: UploadResponse) => {
+        this.failure.set(null);
         this.finishUpload();
         this.uploaded.emit(response);
       },

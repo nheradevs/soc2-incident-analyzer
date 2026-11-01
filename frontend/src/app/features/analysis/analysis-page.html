@@ -74,13 +74,14 @@
 
       <div class="alert__actions analysis-failure-actions">
         <button
-          class="btn btn--primary btn--sm"
+          class="btn btn--primary btn--sm btn--swap"
           type="button"
           (click)="reload()"
           [disabled]="retrying()"
           [attr.aria-busy]="retrying()"
         >
-          Reintentar el análisis
+          <span class="btn__label">Reintentar el análisis</span>
+          <span class="btn__busy" aria-hidden="true">Reintentando…</span>
         </button>
         <a class="btn btn--ghost btn--sm" routerLink="/cargar">Ir a la carga</a>
       </div>

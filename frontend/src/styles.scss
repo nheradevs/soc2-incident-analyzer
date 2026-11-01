@@ -422,6 +422,24 @@ table {
     color var(--duration) var(--ease);
 }
 
+/*
+ * Two labels share one grid cell, so the button is as wide as the longest one
+ * and swapping them can never move the button or its neighbours.
+ */
+.btn--swap {
+  display: inline-grid;
+  place-items: center;
+}
+
+.btn--swap > * {
+  grid-area: 1 / 1;
+}
+
+.btn--swap[aria-busy='true'] .btn__label,
+.btn--swap[aria-busy='false'] .btn__busy {
+  visibility: hidden;
+}
+
 .btn:disabled,
 .btn[aria-disabled='true'] {
   cursor: not-allowed;

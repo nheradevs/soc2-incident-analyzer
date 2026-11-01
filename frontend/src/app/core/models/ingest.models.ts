@@ -78,3 +78,14 @@ export interface ApiFailure {
   status: number;
   message: string;
 }
+
+/**
+ * Whether retrying the same request can change the outcome.
+ *
+ * A network failure, a rate limit or a server error might succeed on a second
+ * attempt. A rejected file or a missing session will fail identically, so
+ * offering "retry" there would be a button that cannot do anything.
+ */
+export function isRetryableFailure(failure: ApiFailure): boolean {
+  return failure.status === 0 || failure.status === 429 || failure.status >= 500;
+}

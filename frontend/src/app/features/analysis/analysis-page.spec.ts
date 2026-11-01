@@ -78,8 +78,11 @@ describe('AnalysisPage', () => {
     const busy = element().querySelector('.analysis-failure-actions button') as HTMLButtonElement;
     expect(busy.disabled).toBe(true);
     expect(busy.getAttribute('aria-busy')).toBe('true');
-    // The label must not change: a text swap resizes the button and shifts its neighbours.
-    expect(busy.textContent?.trim()).toBe('Reintentar el análisis');
+    // Both labels live in the same grid cell, so the box is as wide as the longest one.
+    const label = busy.querySelector('.btn__label') as HTMLElement;
+    const busyLabel = busy.querySelector('.btn__busy') as HTMLElement;
+    expect(label.textContent?.trim()).toBe('Reintentar el análisis');
+    expect(busyLabel.textContent?.trim()).toBe('Reintentando…');
 
     http
       .expectOne('/api/analyze')

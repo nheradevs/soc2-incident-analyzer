@@ -103,12 +103,25 @@
         {{ problem.message }}
       </p>
       <div class="alert__actions">
-        <button class="btn btn--primary btn--sm" type="button" (click)="chooseFile()">
-          Volver a intentar
-        </button>
-        <button class="btn btn--ghost btn--sm" type="button" (click)="chooseFile()">
-          Elegir otro archivo
-        </button>
+        @if (canRetry()) {
+          <button
+            class="btn btn--primary btn--sm btn--swap"
+            type="button"
+            (click)="retryUpload()"
+            [disabled]="busy()"
+            [attr.aria-busy]="busy()"
+          >
+            <span class="btn__label">Reintentar la carga</span>
+            <span class="btn__busy" aria-hidden="true">Reintentando…</span>
+          </button>
+          <button class="btn btn--ghost btn--sm" type="button" (click)="chooseFile()">
+            Elegir otro archivo
+          </button>
+        } @else {
+          <button class="btn btn--primary btn--sm" type="button" (click)="chooseFile()">
+            Elegir otro archivo
+          </button>
+        }
       </div>
     </div>
   } @else if (summary(); as data) {
