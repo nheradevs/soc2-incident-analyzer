@@ -1,86 +1,158 @@
-<section class="report" aria-labelledby="report-title">
-  <header class="report-header">
-    <div>
-      <h2 id="report-title">Informe del análisis</h2>
-      <p class="report-subtitle">
-        Dos versiones del mismo informe, generadas por el servidor a partir del export analizado.
-      </p>
-    </div>
-    <div class="report-header-actions">
-      <a mat-stroked-button routerLink="/analisis">Volver al dashboard</a>
-      <a mat-stroked-button routerLink="/cargar">Ir al paso «Cargar»</a>
-    </div>
-  </header>
+<div class="page-head">
+  <p class="step">Paso 3 de 3</p>
+  <h1>Informe del análisis</h1>
+  <p class="lead">
+    Dos textos con las mismas nueve secciones: uno para quien decide y otro para quien verifica.
+    Cada afirmación cita las filas del Excel que la sostienen.
+  </p>
+</div>
 
-  @if (loading()) {
-    <p class="report-loading" role="status">
-      <mat-spinner diameter="24" aria-hidden="true" />
-      <span>Generando el informe del export cargado…</span>
-    </p>
-  } @else if (failure(); as problem) {
-    <div class="report-failure" role="alert">
-      <p class="report-failure-message">{{ problem.message }}</p>
+@if (loading()) {
+  <div class="report-loading" role="status">
+    <div class="report-layout">
+      <div class="report-main">
+        <section class="card">
+          <div class="card-head">
+            <h2>Componiendo el informe</h2>
+            <span class="card-note">por versiones</span>
+          </div>
+          <div class="progress" role="progressbar" aria-label="Progreso de la composición">
+            <div class="progress__bar"></div>
+          </div>
+          <ol class="pipeline">
+            <li><span class="spinner" aria-hidden="true"></span><span>Versión ejecutiva, 9 secciones</span><span class="pipeline__state">en curso</span></li>
+            <li><span class="tick" aria-hidden="true"></span><span>Versión técnica, 9 secciones</span><span class="pipeline__state">pendiente</span></li>
+            <li><span class="tick" aria-hidden="true"></span><span>PDF</span><span class="pipeline__state">pendiente</span></li>
+          </ol>
+        </section>
+        <div class="report-skeleton">
+          <span class="skeleton skeleton--line skeleton--sm"></span>
+          <span class="skeleton skeleton--line"></span>
+          <span class="skeleton skeleton--line" style="width: 92%"></span>
+          <span class="skeleton skeleton--line" style="width: 84%"></span>
+        </div>
+      </div>
+      <aside class="aside">
+        <div class="card">
+          <h2>Descarga</h2>
+          <button class="btn btn--primary btn--block" type="button" disabled>
+            Descargar PDF
+          </button>
+          <p class="card-note">Disponible cuando terminen las dos versiones.</p>
+        </div>
+      </aside>
+    </div>
+    <span class="visually-hidden">Generando el informe del export cargado…</span>
+  </div>
+} @else if (failure(); as problem) {
+  <div class="report-failure" role="alert">
+    <div class="alert">
+      <div class="alert__head">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.5" />
+          <path d="M10 6v4.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          <circle cx="10" cy="13.75" r="0.9" fill="currentColor" />
+        </svg>
+        <h3>No se pudo componer el informe</h3>
+      </div>
+      <p class="report-failure-message body-copy">{{ problem.message }}</p>
 
       @if (problem.status === 409) {
-        <p class="report-empty-hint">
-          El informe se compone a partir del archivo cargado en el paso «Cargar». Cargue un
-          export .xlsx para ver sus nueve secciones en versión ejecutiva y técnica.
+        <p class="report-empty-hint body-copy">
+          El informe se compone a partir del archivo cargado en el paso Cargar. Carga un export
+          .xlsx para ver sus nueve secciones en versión ejecutiva y técnica.
         </p>
       }
 
-      <div class="report-failure-actions">
-        <button mat-flat-button type="button" (click)="reload()">Reintentar la generación</button>
-        <a mat-stroked-button routerLink="/cargar">Ir al paso «Cargar»</a>
-        <a mat-stroked-button routerLink="/analisis">Ir al dashboard</a>
+      <div class="alert__actions report-failure-actions">
+        <button class="btn btn--primary btn--sm" type="button" (click)="reload()">
+          Reintentar
+        </button>
+        <a class="btn btn--ghost btn--sm" routerLink="/cargar">Ir a la carga</a>
+        <a class="btn btn--quiet btn--sm" routerLink="/analisis">Volver al análisis</a>
       </div>
     </div>
-  } @else if (payload()) {
-    <p class="report-narrative">{{ narrativeLine() }}</p>
+  </div>
+} @else if (payload(); as data) {
+  <p class="report-narrative card-note">{{ narrativeLine() }}</p>
 
-    <div class="report-toolbar">
-      <mat-button-toggle-group
-        class="report-tabs"
-        aria-label="Versión del informe"
-        [value]="version()"
-        (change)="selectVersion($event.value)"
-      >
+  <div class="report-layout">
+    <div class="report-main">
+      <div class="switch report-tabs" role="group" aria-label="Versión del informe">
         @for (option of versions; track option.key) {
-          <mat-button-toggle [value]="option.key">{{ option.label }}</mat-button-toggle>
+          <button
+            type="button"
+            [attr.aria-current]="version() === option.key ? 'true' : 'false'"
+            (click)="selectVersion(option.key)"
+          >
+            {{ option.label }}
+          </button>
         }
-      </mat-button-toggle-group>
+      </div>
 
-      <div class="report-download">
+      @if (activeVersion(); as active) {
+        <app-report-version [version]="active" />
+      }
+    </div>
+
+    <aside class="aside" aria-label="Descarga y alcance del informe">
+      <div class="card">
+        <h2>Descarga</h2>
         <button
-          mat-flat-button
+          class="btn btn--primary btn--block report-download-button"
           type="button"
-          class="report-download-button"
           [disabled]="downloading()"
           (click)="downloadPdf()"
         >
           @if (downloading()) {
-            <mat-spinner class="report-download-busy" diameter="18" aria-hidden="true" />
+            <span class="spinner report-download-busy" aria-hidden="true"></span>
             <span>Generando el PDF…</span>
           } @else {
-            <span>Descargar informe en PDF</span>
+            <span>{{ downloadLabel() }}</span>
           }
         </button>
-        <p class="report-download-hint">
-          El PDF lo genera el servidor con el mismo contenido que se muestra aquí.
+
+        @if (downloadFailure(); as problem) {
+          <p class="report-download-failure alert__detail" role="alert">{{ problem.message }}</p>
+        }
+
+        <p class="card-note">
+          El PDF lo genera el servidor a partir del mismo contenido. El archivo contiene las dos
+          versiones del informe; el botón sigue a la versión que estás leyendo.
         </p>
+        <p class="pdf-foot">Karen Gil, Analista SOC 2</p>
       </div>
-    </div>
 
-    @if (downloadFailure(); as problem) {
-      <p class="report-download-failure" role="alert">{{ problem.message }}</p>
-    }
+      @if (scope(); as reportScope) {
+        <div class="card">
+          <h2>Alcance del informe</h2>
+          <dl>
+            <div>
+              <dt>Eventos</dt>
+              <dd class="num">{{ reportScope.events_analysed }}</dd>
+            </div>
+            <div>
+              <dt>Incidentes</dt>
+              <dd class="num">{{ reportScope.incidents }}</dd>
+            </div>
+            <div>
+              <dt>Hallazgos</dt>
+              <dd class="num">{{ reportScope.findings }}</dd>
+            </div>
+            @if (reportScope.date) {
+              <div>
+                <dt>Fecha</dt>
+                <dd>{{ reportScope.date }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+      }
+    </aside>
+  </div>
 
-    @if (activeVersion(); as active) {
-      <app-report-version [version]="active" />
-    }
-
-    <p class="report-footnote">
-      Contenido generado por el servidor a partir del export analizado. Esta pantalla muestra las
-      secciones tal como llegan: no añade, resume ni completa nada.
-    </p>
-  }
-</section>
+  <p class="report-footnote card-note">
+    Contenido generado por el servidor a partir del export analizado. Esta pantalla muestra las
+    secciones tal como llegan: no añade, resume ni completa nada.
+  </p>
+}

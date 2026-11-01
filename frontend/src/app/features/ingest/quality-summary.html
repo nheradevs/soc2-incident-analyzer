@@ -1,45 +1,62 @@
 @if (summary(); as data) {
-  <section class="quality-summary" aria-labelledby="summary-title">
-    <h2 id="summary-title">Resumen de la carga</h2>
+  <section class="card" aria-labelledby="summary-title">
+    <div class="card-head">
+      <h2 id="summary-title">Resumen de la carga</h2>
+      <span class="card-note">Medido sobre el archivo</span>
+    </div>
 
-    <dl class="summary-grid">
-      <div>
-        <dt>Archivo</dt>
-        <dd class="summary-file">{{ data.file_name }}</dd>
-      </div>
+    <dl class="summary-list">
       <div>
         <dt>Filas</dt>
-        <dd class="summary-rows">{{ data.row_count }}</dd>
+        <dd class="strong num summary-rows">{{ data.row_count }}</dd>
       </div>
       <div>
         <dt>Columnas</dt>
-        <dd class="summary-columns">{{ data.detected_columns.length }}</dd>
+        <dd class="strong num summary-columns">{{ data.detected_columns.length }}</dd>
       </div>
       <div>
-        <dt>Rango temporal</dt>
-        <dd class="summary-time-range">{{ timeRange(data.time_range) }}</dd>
+        <dt>Ventana analizada</dt>
+        <dd class="num">{{ durationLabel() }}</dd>
+        <dd class="summary-time-range num">{{ timeRange(data.time_range) }}</dd>
+      </div>
+      <div>
+        <dt>Filas sin marca de tiempo</dt>
+        <dd class="num">{{ data.quality.timestamp_parse_failures.count }}</dd>
       </div>
     </dl>
 
-    <h3>Calidad de datos</h3>
+    <div class="quality">
+      <h3>Calidad de datos</h3>
 
-    <div class="quality-grid">
-      <article class="quality-block">
-        <h4>Nulos por columna</h4>
-        <p class="quality-null-counts">
+      <div class="quality__item">
+        <div class="quality__head">
+          <h4>Valores nulos por columna</h4>
+          <span class="quality__count">{{ nullCounts().length }} {{ nullCounts().length === 1 ? 'columna' : 'columnas' }}</span>
+        </div>
+        <div class="quality__pairs">
           @for (entry of nullCounts(); track entry.key) {
-            <span>{{ entry.key }}: {{ entry.value }}</span>
+            <span class="chip quality-null-counts">
+              <b>{{ entry.key }}</b><span>{{ ': ' + entry.value }}</span>
+            </span>
           } @empty {
-            <span>Ninguna columna del export tiene valores nulos.</span>
+            <span class="chip quality-null-counts">
+              Ninguna columna del export tiene valores nulos.
+            </span>
           }
+        </div>
+        <p class="quality__body">
+          {{ data.quality.row_count }} filas y {{ data.quality.column_count }} columnas medidas.
         </p>
-        <p class="quality-totals">
-          {{ data.quality.row_count }} filas · {{ data.quality.column_count }} columnas
-        </p>
-      </article>
+      </div>
 
-      <article class="quality-block">
-        <h4>Hosts con escritura duplicada</h4>
+      <div class="quality__item">
+        <div class="quality__head">
+          <h4>Equipos con escritura duplicada</h4>
+          <span class="quality__count">
+            {{ data.quality.duplicate_hosts.length }}
+            {{ data.quality.duplicate_hosts.length === 1 ? 'equipo' : 'equipos' }}
+          </span>
+        </div>
         @for (host of data.quality.duplicate_hosts; track host.host_norm) {
           <p class="quality-duplicate-host">
             <strong>{{ host.host_norm }}</strong> ←
@@ -47,33 +64,58 @@
           </p>
         } @empty {
           <p class="quality-duplicate-host">
-            No se detectaron hosts escritos de más de una forma.
+            No se detectaron equipos escritos de más de una forma.
           </p>
         }
-      </article>
-
-      <article class="quality-block">
-        <h4>Tipos de Event_ID</h4>
-        <p class="quality-event-id">
-          Mezcla de tipos: {{ data.quality.event_id_types.mixed ? 'sí' : 'no' }} ·
-          {{ data.quality.event_id_types.numeric_count }} numéricos ·
-          {{ data.quality.event_id_types.named_count }} nombrados · tipos originales:
-          {{ counts(data.quality.event_id_types.raw_types) }} · ids nombrados:
-          {{ counts(data.quality.event_id_types.named_ids) }}
+        <p class="quality__body">
+          Las formas distintas se unifican en el nombre normalizado antes de analizar.
         </p>
-      </article>
+      </div>
 
-      <article class="quality-block">
-        <h4>Timestamps</h4>
-        <p class="quality-timestamp-failures">
-          {{ data.quality.timestamp_parse_failures.count }} timestamps no interpretables
+      <div class="quality__item">
+        <div class="quality__head">
+          <h4>Tipos de Event_ID</h4>
+          <span class="quality__count">
+            {{ data.quality.event_id_types.mixed ? 'Mezcla de tipos' : 'Un solo tipo' }}
+          </span>
+        </div>
+        <div class="quality__pairs quality-event-id">
+          <span class="chip">
+            <b>{{ data.quality.event_id_types.numeric_count }}</b><span>numéricos</span>
+          </span>
+          <span class="chip">
+            <b>{{ data.quality.event_id_types.named_count }}</b><span>nombrados</span>
+          </span>
+          @for (entry of namedIds(); track entry.key) {
+            <span class="chip"><b>{{ entry.key }}</b><span>{{ ' (' + entry.value + ')' }}</span></span>
+          }
+          @for (entry of rawTypes(); track entry.key) {
+            <span class="chip"><b>{{ entry.key }}</b><span>{{ ' (' + entry.value + ')' }}</span></span>
+          }
+        </div>
+        <p class="quality__body">
+          El identificador mezcla números y texto. Se conserva como texto para no perder
+          ninguna fila.
+        </p>
+      </div>
+
+      <div class="quality__item">
+        <div class="quality__head">
+          <h4>Marcas de tiempo ilegibles</h4>
+          <span class="quality__count">
+            {{ data.quality.timestamp_parse_failures.count }}
+            {{ data.quality.timestamp_parse_failures.count === 1 ? 'fila' : 'filas' }}
+          </span>
+        </div>
+        <p class="quality-timestamp-failures quality__body">
+          {{ data.quality.timestamp_parse_failures.count }} marcas de tiempo no interpretables.
         </p>
         @if (data.quality.timestamp_parse_failures.log_ids.length > 0) {
-          <p class="quality-timestamp-log-ids">
+          <p class="quality-timestamp-log-ids quality__body">
             Log_ID afectados: {{ data.quality.timestamp_parse_failures.log_ids.join(', ') }}
           </p>
         }
-      </article>
+      </div>
     </div>
   </section>
 }

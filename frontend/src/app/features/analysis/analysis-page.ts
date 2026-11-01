@@ -1,12 +1,11 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subscription } from 'rxjs';
 
 import { DashboardPayload } from '../../core/models/analysis.models';
 import { ApiFailure } from '../../core/models/ingest.models';
 import { AnalysisApiService } from '../../core/services/analysis-api.service';
+import { formatDuration, formatTimestamp } from './analysis-format';
 import { CoveragePanel } from './coverage-panel';
 import { DashboardCharts } from './dashboard-charts';
 import { DashboardKpis } from './dashboard-kpis';
@@ -24,8 +23,6 @@ import { IncidentList } from './incident-list';
 @Component({
   selector: 'app-analysis-page',
   imports: [
-    MatButtonModule,
-    MatProgressSpinnerModule,
     CoveragePanel,
     DashboardCharts,
     DashboardKpis,
@@ -43,6 +40,48 @@ export class AnalysisPage implements OnInit, OnDestroy {
   readonly loading = signal(true);
   readonly failure = signal<ApiFailure | null>(null);
   readonly selectedId = signal<string | null>(null);
+
+  /** Labels of the KPI skeletons, so the loading state is Spanish too. */
+  readonly skeletonLevels = [
+    { key: 'critical', label: 'Crítico' },
+    { key: 'high', label: 'Alto' },
+    { key: 'medium', label: 'Medio' },
+    { key: 'low', label: 'Bajo' },
+  ];
+
+  /** Window and volume of the analysis, built only from what the payload measured. */
+  readonly lead = computed(() => {
+    const data = this.payload();
+    if (data === null) {
+      return '';
+    }
+    const duration = formatDuration(data.coverage.time_window.duration_minutes);
+    const incidents = data.coverage.incidents;
+    return (
+      `${duration} de actividad agrupada en ${incidents} ` +
+      `${incidents === 1 ? 'incidente' : 'incidentes'}. La lista está ordenada por severidad: ` +
+      'el primero es el que hay que explicar antes.'
+    );
+  });
+
+  /** Facts of the window and the incidents that still need manual validation. */
+  readonly windowLine = computed(() => {
+    const data = this.payload();
+    if (data === null) {
+      return '';
+    }
+    const window = data.coverage.time_window;
+    return (
+      `La ventana cubre ${formatDuration(window.duration_minutes)}, entre ` +
+      `${formatTimestamp(window.start)} y ${formatTimestamp(window.end)}.`
+    );
+  });
+
+  readonly validationIncidents = computed(() =>
+    (this.payload()?.incidents ?? [])
+      .filter((incident) => incident.requires_validation)
+      .map((incident) => incident.id),
+  );
 
   private subscription: Subscription | null = null;
 

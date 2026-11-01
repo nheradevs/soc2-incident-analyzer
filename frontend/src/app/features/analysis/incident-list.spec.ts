@@ -35,7 +35,7 @@ describe('IncidentList', () => {
 
     const badges = element.querySelectorAll('.incident-validation');
     expect(badges.length).toBe(1);
-    expect(badges[0].textContent).toContain('requiere validación');
+    expect(badges[0].textContent).toContain('Requiere validación');
   });
 
   it('emits the identifier of the incident the analyst opens', () => {

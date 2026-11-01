@@ -1,44 +1,89 @@
-<section class="analysis" aria-labelledby="analysis-title">
-  <header class="analysis-header">
-    <div>
-      <h2 id="analysis-title">Dashboard de análisis</h2>
-      <p class="analysis-subtitle">
-        Estadísticas y gráficos calculados sobre el export cargado: solo se muestra lo que el
-        export mide.
-      </p>
-    </div>
-    <div class="analysis-header-actions">
-      <a mat-flat-button routerLink="/informe" class="to-report">Ver el informe</a>
-      <a mat-stroked-button routerLink="/cargar">Volver a la carga</a>
-    </div>
-  </header>
+<div class="page-head">
+  <p class="step">Paso 2 de 3</p>
+  <h1>Análisis del export</h1>
+  @if (payload(); as data) {
+    <p class="lead">{{ lead() }}</p>
+  }
+</div>
 
-  @if (loading()) {
-    <p class="analysis-loading" role="status">
-      <mat-spinner diameter="24" aria-hidden="true" />
-      <span>Analizando el export cargado…</span>
-    </p>
-  } @else if (failure(); as problem) {
-    <div class="analysis-failure" role="alert">
-      <p class="analysis-failure-message">{{ problem.message }}</p>
+@if (loading()) {
+  <div class="analysis-loading" role="status">
+    <div class="kpis" aria-hidden="true">
+      @for (level of skeletonLevels; track level.key) {
+        <div class="kpi">
+          <span class="kpi__label">
+            <span class="level" [attr.data-level]="level.key">{{ level.label }}</span>
+          </span>
+          <span class="skeleton skeleton--line skeleton--sm kpi-skeleton"></span>
+          <span class="skeleton skeleton--line skeleton--md"></span>
+        </div>
+      }
+    </div>
+
+    <div class="dash">
+      <section class="card">
+        <div class="card-head">
+          <h2>Análisis en curso</h2>
+          <span class="card-note">por etapas</span>
+        </div>
+        <div class="progress" role="progressbar" aria-label="Progreso del análisis">
+          <div class="progress__bar"></div>
+        </div>
+        <ol class="pipeline">
+          <li><span class="spinner" aria-hidden="true"></span><span>Normalización de los eventos</span><span class="pipeline__state">en curso</span></li>
+          <li><span class="tick" aria-hidden="true"></span><span>Detección sobre los eventos normalizados</span><span class="pipeline__state">pendiente</span></li>
+          <li><span class="tick" aria-hidden="true"></span><span>Correlación en incidentes</span><span class="pipeline__state">pendiente</span></li>
+          <li><span class="tick" aria-hidden="true"></span><span>Clasificación por impacto y confianza</span><span class="pipeline__state">pendiente</span></li>
+        </ol>
+      </section>
+
+      <section class="card" aria-hidden="true">
+        <div class="card-head">
+          <h2>Incidentes</h2>
+        </div>
+        <div class="skeleton-stack">
+          <span class="skeleton skeleton--line skeleton--md"></span>
+          <span class="skeleton skeleton--line"></span>
+          <span class="skeleton skeleton--line" style="width: 88%"></span>
+          <span class="skeleton skeleton--line" style="width: 74%"></span>
+        </div>
+      </section>
+    </div>
+
+    <span class="visually-hidden">Analizando el export cargado…</span>
+  </div>
+} @else if (failure(); as problem) {
+  <div class="analysis-failure" role="alert">
+    <div class="alert">
+      <div class="alert__head">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.5" />
+          <path d="M10 6v4.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          <circle cx="10" cy="13.75" r="0.9" fill="currentColor" />
+        </svg>
+        <h3>El análisis se interrumpió</h3>
+      </div>
+      <p class="analysis-failure-message body-copy">{{ problem.message }}</p>
 
       @if (problem.status === 409) {
-        <p class="analysis-empty-hint">
-          El dashboard se calcula sobre el archivo cargado en el paso «Cargar». Cargue un export
+        <p class="analysis-empty-hint body-copy">
+          El dashboard se calcula sobre el archivo cargado en el paso Cargar. Carga un export
           .xlsx para ver indicadores, gráficos e incidentes.
         </p>
       }
 
-      <div class="analysis-failure-actions">
-        <button mat-flat-button type="button" (click)="reload()">Reintentar el análisis</button>
-        <a mat-stroked-button routerLink="/cargar">Ir al paso «Cargar»</a>
+      <div class="alert__actions analysis-failure-actions">
+        <button class="btn btn--primary btn--sm" type="button" (click)="reload()">
+          Reintentar el análisis
+        </button>
+        <a class="btn btn--ghost btn--sm" routerLink="/cargar">Ir a la carga</a>
       </div>
     </div>
-  } @else if (payload(); as data) {
-    <app-dashboard-kpis [payload]="data" />
-    <app-coverage-panel [payload]="data" />
-    <app-dashboard-charts [payload]="data" />
+  </div>
+} @else if (payload(); as data) {
+  <app-dashboard-kpis [payload]="data" />
 
+  <div class="dash">
     <app-incident-list
       [incidents]="data.incidents"
       [selectedId]="selectedId()"
@@ -47,6 +92,53 @@
 
     @if (selectedId(); as incidentId) {
       <app-incident-detail [incidentId]="incidentId" (closed)="closeDetail()" />
+    } @else {
+      <section class="card detail-idle" aria-labelledby="detail-idle-title">
+        <div class="empty-panel">
+          <h2 id="detail-idle-title">Elige un incidente</h2>
+          <p class="body-copy">
+            La lista está ordenada por severidad. Al elegir un incidente se abre su clasificación,
+            sus hallazgos y la evidencia citada.
+          </p>
+        </div>
+      </section>
     }
-  }
-</section>
+  </div>
+
+  <app-dashboard-charts [payload]="data" />
+
+  <section class="scope" aria-labelledby="scope-title">
+    <app-coverage-panel [payload]="data" />
+
+    <div class="card">
+      <div class="card-head">
+        <h2 id="scope-title">Límites del análisis</h2>
+      </div>
+      <ul class="list">
+        <li><span>{{ windowLine() }}</span></li>
+        @if (data.coverage.events_without_timestamp > 0) {
+          <li>
+            <span>
+              {{ data.coverage.events_without_timestamp }} eventos no tienen una marca de tiempo
+              interpretable y no entran en la serie por hora.
+            </span>
+          </li>
+        }
+        @if (validationIncidents().length > 0) {
+          <li>
+            <span>
+              <b>Requieren validación manual:</b> {{ validationIncidents().join(', ') }}. El
+              patrón también es compatible con actividad legítima.
+            </span>
+          </li>
+        }
+        <li>
+          <span>
+            El texto del informe declara las limitaciones completas; esta pantalla solo muestra
+            lo que el análisis midió.
+          </span>
+        </li>
+      </ul>
+    </div>
+  </section>
+}

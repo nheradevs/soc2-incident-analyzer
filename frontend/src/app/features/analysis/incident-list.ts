@@ -1,8 +1,6 @@
 import { Component, input, output } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 
 import { IncidentSummary } from '../../core/models/analysis.models';
-import { formatTimestamp } from './analysis-format';
 
 /**
  * RF4 incident list.
@@ -12,7 +10,6 @@ import { formatTimestamp } from './analysis-format';
  */
 @Component({
   selector: 'app-incident-list',
-  imports: [MatIconModule],
   templateUrl: './incident-list.html',
   styleUrl: './incident-list.scss',
 })
@@ -21,5 +18,11 @@ export class IncidentList {
   readonly selectedId = input<string | null>(null);
   readonly selected = output<string>();
 
-  readonly formatTimestamp = formatTimestamp;
+  /** Hour and minute of an incident timestamp, e.g. `08:20`. */
+  clock(value: string | null): string {
+    if (value === null || value.length < 16) {
+      return 'sin hora';
+    }
+    return value.slice(11, 16);
+  }
 }

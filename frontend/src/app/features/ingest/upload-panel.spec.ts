@@ -44,7 +44,7 @@ describe('UploadPanel', () => {
     expect(labelledBy).withContext('aria-labelledby').not.toBeNull();
     const label = fixture.nativeElement.querySelector(`#${labelledBy}`) as HTMLElement;
     expect(label).withContext('label element').not.toBeNull();
-    expect(label.textContent).toContain('Seleccionar archivo .xlsx');
+    expect(label.textContent).toContain('Elegir archivo .xlsx');
 
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     expect(button.getAttribute('type')).toBe('button');
@@ -67,16 +67,14 @@ describe('UploadPanel', () => {
     expect(body.get('file')).toBe(file);
 
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Procesando archivo');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Validando');
 
     const response = uploadResponseFixture();
     request.flush(response);
     fixture.detectChanges();
 
     expect(emitted).toEqual(response);
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain(
-      'Procesando archivo',
-    );
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Validando');
   });
 
   it('renders the backend rejection message verbatim and emits nothing', () => {
@@ -91,7 +89,8 @@ describe('UploadPanel', () => {
     fixture.detectChanges();
 
     const alert = (fixture.nativeElement as HTMLElement).querySelector('[role="alert"]');
-    expect(alert?.textContent?.trim()).toBe(detail);
+    expect(alert?.textContent).toContain(detail);
+    expect(alert?.textContent).toContain('Detalle: 400');
     expect(emitted).toBeFalse();
     expect(fileInput().value).toBe('');
   });

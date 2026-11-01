@@ -1,6 +1,4 @@
 import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 
 import { UploadResponse } from '../../core/models/ingest.models';
 import { EventsTable } from './events-table';
@@ -10,7 +8,7 @@ import { UploadPanel } from './upload-panel';
 /** The Cargar step: load one export, report its quality and browse its events. */
 @Component({
   selector: 'app-ingest-page',
-  imports: [UploadPanel, QualitySummary, EventsTable, MatButtonModule, RouterLink],
+  imports: [UploadPanel, QualitySummary, EventsTable],
   templateUrl: './ingest-page.html',
   styleUrl: './ingest-page.scss',
 })

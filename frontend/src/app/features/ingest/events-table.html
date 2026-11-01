@@ -1,36 +1,78 @@
-<section class="events" aria-labelledby="events-title">
-  <h2 id="events-title">Eventos</h2>
+<section class="events-section" aria-labelledby="events-title">
+  <div class="events-section__head">
+    <div>
+      <h2 id="events-title">Eventos del export</h2>
+      <p class="events-section__note">
+        Las filas llegan tal como están en el archivo. La tabla muestra lo que devuelve la
+        API y no recalcula nada. En tableta y en móvil se desliza de izquierda a derecha con la
+        primera columna fija.
+      </p>
+    </div>
 
-  <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-    <mat-label>Buscar en todas las columnas</mat-label>
-    <input
-      matInput
-      [formControl]="searchControl"
-      aria-label="Buscar en todos los eventos"
-      autocomplete="off"
-    />
-  </mat-form-field>
+    <div class="toolbar">
+      <div class="field">
+        <label for="events-search">Buscar en la tabla</label>
+        <div class="search">
+          <input
+            id="events-search"
+            class="input"
+            type="search"
+            [formControl]="searchControl"
+            aria-label="Buscar en todos los eventos"
+            aria-describedby="events-search-help"
+            placeholder="Log_ID, equipo o IP"
+            autocomplete="off"
+          />
+          <span class="search__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+              <path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </span>
+        </div>
+        <span class="field__help" id="events-search-help">
+          La tabla se filtra mientras escribes.
+        </span>
+      </div>
+    </div>
+  </div>
 
   @if (loading()) {
-    <mat-progress-bar mode="indeterminate" aria-label="Cargando eventos" />
+    <mat-progress-bar
+      class="events-progress"
+      mode="indeterminate"
+      aria-label="Cargando eventos"
+    />
   }
 
   @if (failure(); as problem) {
     <p class="table-state" role="alert">{{ problem.message }}</p>
   } @else if (columns().length > 0) {
-    <div class="table-scroll">
+    <div class="table-wrap">
       <table
         mat-table
         matSort
+        class="events"
         [dataSource]="rows()"
         [matSortActive]="sortColumn() ?? ''"
         [matSortDirection]="sortOrder()"
         (matSortChange)="onSort($event)"
       >
+        <caption class="visually-hidden">
+          Eventos del archivo cargado, ordenados por la columna activa.
+        </caption>
+
         @for (column of columns(); track column) {
           <ng-container [matColumnDef]="column">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ column }}</th>
-            <td mat-cell *matCellDef="let row" [title]="cellText(row, column)">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ tableLabel(column) }}</th>
+            <td
+              mat-cell
+              *matCellDef="let row"
+              [class.cell-id]="column === 'Log_ID'"
+              [class.cell-void]="isVoid(row, column)"
+              [class.cell-mono]="isMono(column)"
+              [title]="cellText(row, column)"
+            >
               {{ cellText(row, column) }}
             </td>
           </ng-container>
@@ -43,18 +85,25 @@
 
     @if (rows().length === 0) {
       <p class="table-state">No hay eventos que coincidan con la búsqueda.</p>
-    } @else {
-      <p class="table-total">{{ total() }} eventos encontrados</p>
     }
 
-    <mat-paginator
-      aria-label="Paginación de eventos"
-      [length]="total()"
-      [pageIndex]="page() - 1"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="[25, 50, 100, 200]"
-      showFirstLastButtons
-      (page)="onPage($event)"
-    />
+    <div class="events-section__foot">
+      <p class="card-note num">
+        Filas {{ firstRow() }} a {{ lastRow() }} de {{ total() }}
+      </p>
+      <mat-paginator
+        aria-label="Paginación de eventos"
+        [length]="total()"
+        [pageIndex]="page() - 1"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[25, 50, 100, 200]"
+        showFirstLastButtons
+        (page)="onPage($event)"
+      />
+    </div>
+  } @else if (!loading()) {
+    <div class="events-empty">
+      <p class="card-note">Sin eventos para mostrar.</p>
+    </div>
   }
 </section>

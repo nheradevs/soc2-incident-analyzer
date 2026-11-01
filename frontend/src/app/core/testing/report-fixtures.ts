@@ -59,8 +59,8 @@ export function reportPayloadFixture(
       'Se identificaron 2 incidentes: 1 crítico y 1 alto.',
     ]),
     section(1, [
-      '• Fuerza bruta RDP con origen externo — criticidad crítico.',
-      '• Inicio de sesión sospechoso en WEB-01 — criticidad alto.',
+      '• Fuerza bruta RDP con origen externo · criticidad crítico.',
+      '• Inicio de sesión sospechoso en WEB-01 · criticidad alto.',
     ]),
     section(2, [
       'El primer incidente agrupa intentos repetidos de inicio de sesión desde una IP externa.',
@@ -83,8 +83,8 @@ export function reportPayloadFixture(
       'Distribución por criticidad: crítico 1, alto 1, medio 0, bajo 0.',
     ]),
     section(1, [
-      '• INC-20261023-0820 · Fuerza bruta RDP con origen externo — criticidad crítico.',
-      '• INC-20261023-0936 · Inicio de sesión sospechoso en WEB-01 — criticidad alto.',
+      '• INC-20261023-0820 · Fuerza bruta RDP con origen externo · criticidad crítico.',
+      '• INC-20261023-0936 · Inicio de sesión sospechoso en WEB-01 · criticidad alto.',
     ]),
     section(2, [
       'La regla D1c eleva la severidad de cualquier 4625 con origen externo.',

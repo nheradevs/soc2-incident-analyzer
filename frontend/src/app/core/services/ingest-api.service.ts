@@ -13,7 +13,7 @@ import {
 const API_BASE = '/api';
 
 const NETWORK_MESSAGE =
-  'No se pudo contactar con el servidor. Verifique que el backend esté en ejecución.';
+  'No se pudo contactar con el servidor. Verifica que el backend esté en ejecución.';
 
 /** Read the Spanish `detail` string FastAPI sends on rejection. */
 function readDetail(body: unknown): string | null {

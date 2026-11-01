@@ -9,8 +9,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 
@@ -31,7 +29,7 @@ const LOG_ID = 'Log_ID';
  */
 @Component({
   selector: 'app-incident-detail',
-  imports: [MatButtonModule, MatProgressSpinnerModule, MatTableModule],
+  imports: [MatTableModule],
   templateUrl: './incident-detail.html',
   styleUrl: './incident-detail.scss',
 })
@@ -113,7 +111,7 @@ export class IncidentDetail implements OnChanges, OnDestroy {
   cellText(row: EventRow, column: string): string {
     const value = row[column];
     if (value === null || value === undefined) {
-      return '—';
+      return 'Sin datos';
     }
     return String(value);
   }

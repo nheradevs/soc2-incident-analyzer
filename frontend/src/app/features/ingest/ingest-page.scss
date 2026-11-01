@@ -1,40 +1,16 @@
-.ingest-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  max-width: 80rem;
-  margin: 0 auto;
-  padding: 1.5rem;
+.workspace {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: start;
 }
 
-.empty-state {
-  margin: 0;
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem;
-  background: var(--mat-sys-surface-container);
-  color: var(--mat-sys-on-surface-variant);
+.workspace > * {
+  min-width: 0;
 }
 
-// Next-step block offered once the export is loaded: same surface, radius and
-// padding as the other blocks of the page, with the action aligned to the end.
-.next-step {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 1rem;
-  background: var(--mat-sys-surface-container-low);
-}
-
-.next-step-hint {
-  margin: 0;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-body-medium);
-}
-
-.to-analysis {
-  flex: none;
+@container (max-width: 62rem) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

@@ -20,9 +20,7 @@ import {
 export class CoveragePanel {
   readonly payload = input.required<DashboardPayload>();
 
-  readonly categories = computed<CategoryCoverage[]>(
-    () => this.payload().coverage.categories,
-  );
+  readonly categories = computed<CategoryCoverage[]>(() => this.payload().coverage.categories);
 
   readonly coveredCount = computed(
     () => this.categories().filter((category) => category.findings > 0).length,
@@ -38,7 +36,17 @@ export class CoveragePanel {
       .join(', ');
   });
 
-  readonly excludedAccounts = computed(
-    () => this.payload().charts.excluded_accounts,
-  );
+  readonly excludedAccounts = computed(() => this.payload().charts.excluded_accounts);
+
+  readonly affectedLabel = computed(() => {
+    const affected = this.payload().risk.affected;
+    const accounts = affected.users.length;
+    const hosts = affected.hosts.length;
+    const sources = affected.external_sources.length;
+    return (
+      `${accounts} ${accounts === 1 ? 'cuenta' : 'cuentas'}, ` +
+      `${hosts} ${hosts === 1 ? 'equipo' : 'equipos'} y ` +
+      `${sources} ${sources === 1 ? 'dirección externa' : 'direcciones externas'} afectadas.`
+    );
+  });
 }

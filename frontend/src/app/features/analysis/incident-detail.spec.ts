@@ -37,10 +37,11 @@ describe('IncidentDetail', () => {
 
     const content = element().textContent ?? '';
     expect(content).toContain('Fuerza bruta RDP con origen externo');
-    expect(content).toContain('Criticidad: crítico');
-    expect(content).toContain('Impacto: crítico');
-    expect(content).toContain('Confianza: alta');
+    expect(content).toContain('crítico');
+    expect(content).toContain('alta');
     expect(content).toContain('INC-20261023-0820');
+    const level = element().querySelector('.detail-level') as HTMLElement;
+    expect(level.getAttribute('data-level')).toBe('critical');
   });
 
   it('shows every finding with the justification the risk matrix wrote', () => {

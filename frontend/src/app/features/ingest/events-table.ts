@@ -1,8 +1,6 @@
 import { Component, OnChanges, OnInit, SimpleChanges, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatPaginatorIntl, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
@@ -15,18 +13,34 @@ import {
   EventsPage,
   SortOrder,
 } from '../../core/models/ingest.models';
+import { SpanishPaginatorIntl } from '../../core/i18n/spanish-paginator-intl';
 import { IngestApiService } from '../../core/services/ingest-api.service';
 
 const DEFAULT_PAGE_SIZE = 50;
 const SEARCH_DEBOUNCE_MS = 300;
+const LOG_ID = 'Log_ID';
+
+/** Spanish header labels of the columns the design names, keyed by API column. */
+const COLUMN_LABELS: Record<string, string> = {
+  Log_ID: 'Log_ID',
+  Timestamp: 'Marca de tiempo',
+  Hostname: 'Equipo',
+  Event_ID: 'Evento',
+  User: 'Cuenta',
+  Source_IP: 'Origen',
+  Destination: 'Destino',
+  Result: 'Resultado',
+  Event_Description: 'Descripción',
+  event_family: 'Familia de evento',
+  ip_class: 'Clase de IP',
+  bytes_out: 'Bytes de salida',
+};
 
 /** RF1 table view: server-side pagination, search and sorting over `/api/events`. */
 @Component({
   selector: 'app-events-table',
   imports: [
     ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatSortModule,
@@ -34,6 +48,7 @@ const SEARCH_DEBOUNCE_MS = 300;
   ],
   templateUrl: './events-table.html',
   styleUrl: './events-table.scss',
+  providers: [{ provide: MatPaginatorIntl, useClass: SpanishPaginatorIntl }],
 })
 export class EventsTable implements OnInit, OnChanges {
   private readonly api = inject(IngestApiService);
@@ -83,10 +98,32 @@ export class EventsTable implements OnInit, OnChanges {
     this.load(1);
   }
 
+  /** First row of the page, for the count line under the table. */
+  firstRow(): number {
+    return this.total() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
+  }
+
+  lastRow(): number {
+    return Math.min(this.page() * this.pageSize(), this.total());
+  }
+
+  tableLabel(column: string): string {
+    return COLUMN_LABELS[column] ?? column;
+  }
+
+  isVoid(row: EventRow, column: string): boolean {
+    const value = row[column];
+    return value === null || value === undefined || value === '';
+  }
+
+  isMono(column: string): boolean {
+    return column === 'Source_IP' || column === 'Destination';
+  }
+
   cellText(row: EventRow, column: string): string {
     const value = row[column];
     if (value === null || value === undefined) {
-      return '—';
+      return 'Sin datos';
     }
     return String(value);
   }

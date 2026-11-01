@@ -44,8 +44,8 @@ describe('ReportPage', () => {
   }
 
   function openTechnicalVersion(): void {
-    const toggles = element().querySelectorAll('.report-tabs mat-button-toggle');
-    (toggles[1].querySelector('button') as HTMLButtonElement).click();
+    const toggles = element().querySelectorAll('.report-tabs button');
+    (toggles[1] as HTMLButtonElement).click();
     fixture.detectChanges();
   }
 
@@ -194,13 +194,22 @@ describe('ReportPage', () => {
     ).toBeFalse();
   });
 
-  it('offers routerLink navigation back to the dashboard and to Cargar', () => {
+  it('keeps one version on screen and moves the download action with the switch', () => {
     flushReport();
 
-    const targets = Array.from(element().querySelectorAll('a')).map((link) =>
-      link.getAttribute('href'),
+    expect(element().querySelectorAll('app-report-version').length).toBe(1);
+    expect(element().querySelector('.report-download-button')?.textContent).toContain(
+      'versión ejecutiva',
     );
-    expect(targets).toContain('/analisis');
-    expect(targets).toContain('/cargar');
+
+    openTechnicalVersion();
+
+    expect(element().querySelectorAll('app-report-version').length).toBe(1);
+    expect(element().querySelector('.report-download-button')?.textContent).toContain(
+      'versión técnica',
+    );
+    expect(element().querySelector('.report-download-button')?.textContent).not.toContain(
+      'ejecutiva',
+    );
   });
 });

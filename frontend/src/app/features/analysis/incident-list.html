@@ -1,36 +1,46 @@
-<section class="incidents-section" aria-labelledby="incidents-title">
-  <h3 id="incidents-title">Incidentes ordenados por criticidad</h3>
+<section class="card" aria-labelledby="incidents-title">
+  <div class="card-head">
+    <h2 id="incidents-title">Incidentes</h2>
+    <span class="card-note">Por severidad</span>
+  </div>
 
-  <ol class="incidents">
+  <ul class="incident-list">
     @for (incident of incidents(); track incident.id) {
-      <li class="incident" [attr.data-level]="incident.level_key" [attr.data-incident-id]="incident.id">
+      <li>
         <button
           type="button"
-          class="incident-open"
-          [class.incident-open--active]="selectedId() === incident.id"
-          [attr.aria-pressed]="selectedId() === incident.id"
+          class="incident incident-open"
+          [attr.data-level]="incident.level_key"
+          [attr.data-incident-id]="incident.id"
+          [attr.aria-current]="selectedId() === incident.id ? 'true' : 'false'"
           (click)="selected.emit(incident.id)"
         >
-          <span class="incident-level">{{ incident.level }}</span>
-
-          <span class="incident-body">
-            <span class="incident-title">{{ incident.title }}</span>
-            <span class="incident-meta">
-              {{ incident.id }} · {{ incident.event_count }} eventos ·
-              {{ formatTimestamp(incident.first_seen) }} → {{ formatTimestamp(incident.last_seen) }}
-            </span>
-            <span class="incident-categories">{{ incident.categories_labels.join(' · ') }}</span>
+          <span class="incident__top">
+            <span class="level" [attr.data-level]="incident.level_key">{{ incident.level }}</span>
+            <span class="incident__id">{{ incident.id }}</span>
           </span>
-
-          @if (incident.requires_validation) {
-            <span class="incident-validation">requiere validación</span>
-          }
-
-          <mat-icon class="incident-chevron" aria-hidden="true">chevron_right</mat-icon>
+          <span class="incident__title">{{ incident.title }}</span>
+          <span class="incident__meta">
+            <span class="num">{{ clock(incident.first_seen) }} a {{ clock(incident.last_seen) }}</span>
+            <span class="num">
+              {{ incident.event_count }} {{ incident.event_count === 1 ? 'evento' : 'eventos' }}
+            </span>
+            <span class="num">
+              {{ incident.entities.users.length }}
+              {{ incident.entities.users.length === 1 ? 'cuenta' : 'cuentas' }}
+            </span>
+            <span class="num">
+              {{ incident.entities.hosts.length }}
+              {{ incident.entities.hosts.length === 1 ? 'equipo' : 'equipos' }}
+            </span>
+            @if (incident.requires_validation) {
+              <span class="incident__flag incident-validation">Requiere validación</span>
+            }
+          </span>
         </button>
       </li>
     } @empty {
       <li class="incident-empty">No se detectaron incidentes en este export.</li>
     }
-  </ol>
+  </ul>
 </section>

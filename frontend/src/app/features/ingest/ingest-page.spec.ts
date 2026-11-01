@@ -46,7 +46,7 @@ describe('IngestPage', () => {
     fixture.detectChanges();
 
     const content = element().textContent ?? '';
-    expect(content).toContain('Aún no se ha cargado ningún archivo');
+    expect(content).toContain('Todavía no hay ningún archivo');
     expect(content).toContain(NO_SESSION_MESSAGE);
     expect(element().querySelector('app-quality-summary')).toBeNull();
     expect(element().querySelectorAll('tbody tr').length).toBe(0);
@@ -71,6 +71,6 @@ describe('IngestPage', () => {
     const content = element().textContent ?? '';
     expect(content).toContain('SOC_L2_Logs.xlsx');
     expect(content).toContain('auth_failure');
-    expect(content).not.toContain('Aún no se ha cargado ningún archivo');
+    expect(content).not.toContain('Todavía no hay ningún archivo');
   });
 });

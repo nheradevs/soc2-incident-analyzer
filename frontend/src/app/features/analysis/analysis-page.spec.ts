@@ -78,12 +78,14 @@ describe('AnalysisPage', () => {
     expect(element().querySelectorAll('.incident').length).toBe(2);
   });
 
-  it('links to the report step next to the way back to Cargar', () => {
+  it('opens with the redesign page head and the measured window as its lead', () => {
     flushDashboard();
 
-    const toReport = element().querySelector('.to-report') as HTMLAnchorElement;
-    expect(toReport.getAttribute('href')).toBe('/informe');
-    expect(toReport.textContent).toContain('informe');
+    const head = element().querySelector('.page-head') as HTMLElement;
+    expect(head.textContent).toContain('Paso 2 de 3');
+    expect(head.textContent).toContain('Análisis del export');
+    expect(head.textContent).toContain('5 h 58 min');
+    expect(head.textContent).toContain('2 incidentes');
   });
 
   it('opens the incident drill-down with its distinct evidence count', () => {

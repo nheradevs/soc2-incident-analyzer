@@ -1,14 +1,12 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subscription } from 'rxjs';
 
 import { ApiFailure } from '../../core/models/ingest.models';
 import {
   ReportDownload,
   ReportPayload,
+  ReportScope,
   ReportVersion,
   ReportVersionKey,
 } from '../../core/models/report.models';
@@ -26,13 +24,7 @@ import { ReportVersionPanel } from './report-version';
  */
 @Component({
   selector: 'app-report-page',
-  imports: [
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatProgressSpinnerModule,
-    ReportVersionPanel,
-    RouterLink,
-  ],
+  imports: [ReportVersionPanel, RouterLink],
   templateUrl: './report-page.html',
   styleUrl: './report-page.scss',
 })
@@ -56,6 +48,16 @@ export class ReportPage implements OnInit, OnDestroy {
     const payload = this.payload();
     return payload === null ? null : payload.versions[this.version()];
   });
+
+  /** The download action names the version that is on screen. */
+  readonly downloadLabel = computed(
+    () =>
+      `Descargar PDF · ${
+        this.version() === 'tecnica' ? 'versión técnica' : 'versión ejecutiva'
+      }`,
+  );
+
+  readonly scope = computed<ReportScope | null>(() => this.payload()?.scope ?? null);
 
   readonly narrativeLine = computed(() => narrativeStateLine(this.payload()?.narrative.estado));
 
@@ -83,7 +85,12 @@ export class ReportPage implements OnInit, OnDestroy {
     }
   }
 
-  /** Fetch the PDF as a blob and hand it to the browser under the suggested name. */
+  /**
+   * Fetch the PDF as a blob and hand it to the browser under the suggested name.
+   *
+   * The backend returns one PDF that carries both versions, so the action is
+   * labelled with the active version but the file itself is the same one.
+   */
   downloadPdf(): void {
     if (this.downloading()) {
       return;

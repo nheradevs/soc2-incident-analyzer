@@ -1,23 +1,38 @@
-<div class="ingest-page">
-  <app-upload-panel (uploaded)="onUploaded($event)" />
+<div class="page-head">
+  <p class="step">Paso 1 de 3</p>
+  <h1>Carga y revisión del export</h1>
+  <p class="lead">
+    Arrastra el archivo .xlsx exportado del SIEM. La interfaz valida el contenido, muestra qué
+    problemas trae el archivo y deja los eventos listos para analizar.
+  </p>
+</div>
 
-  @if (summary()) {
-    <div class="next-step">
-      <p class="next-step-hint">
-        El export ya está cargado en el servidor: puede pasar al dashboard de análisis.
-      </p>
-      <a mat-flat-button routerLink="/analisis" class="to-analysis">Ir al dashboard de análisis</a>
-    </div>
-  }
+<div class="workspace">
+  <app-upload-panel [summary]="summary()" (uploaded)="onUploaded($event)" />
 
   @if (summary(); as data) {
     <app-quality-summary [summary]="data" />
   } @else {
-    <p class="empty-state">
-      Aún no se ha cargado ningún archivo. El resumen de calidad y la tabla de eventos
-      aparecerán cuando cargue un export .xlsx.
-    </p>
+    <section class="card" aria-labelledby="quality-empty-title">
+      <div class="empty-panel">
+        <h3 id="quality-empty-title">Qué vas a ver cuando cargues el archivo</h3>
+        <ol class="steps-list">
+          <li>
+            <span><b>Resumen.</b> Filas, columnas y ventana de tiempo del export.</span>
+          </li>
+          <li>
+            <span>
+              <b>Calidad de datos.</b> Nulos, equipos escritos de dos formas y tipos mezclados
+              en Event_ID.
+            </span>
+          </li>
+          <li>
+            <span><b>Tabla de eventos.</b> Las filas tal como llegan, con búsqueda y orden.</span>
+          </li>
+        </ol>
+      </div>
+    </section>
   }
-
-  <app-events-table [refreshKey]="refreshKey()" />
 </div>
+
+<app-events-table [refreshKey]="refreshKey()" />

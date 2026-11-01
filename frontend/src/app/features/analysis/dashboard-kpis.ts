@@ -14,17 +14,26 @@ export class DashboardKpis {
 
   readonly levels = computed(() => this.payload().risk.levels);
 
+  readonly windowStart = computed(() =>
+    formatTimestamp(this.payload().coverage.time_window.start),
+  );
+
+  readonly windowEnd = computed(() => formatTimestamp(this.payload().coverage.time_window.end));
+
   readonly windowLabel = computed(() => {
     const window = this.payload().coverage.time_window;
-    const range = `${formatTimestamp(window.start)} → ${formatTimestamp(window.end)}`;
-    return `${range} · ${formatDuration(window.duration_minutes)}`;
+    return `${formatTimestamp(window.start)} → ${formatTimestamp(window.end)} · ${formatDuration(window.duration_minutes)}`;
   });
 
   readonly affectedLabel = computed(() => {
     const affected = this.payload().risk.affected;
+    const accounts = affected.users.length;
+    const hosts = affected.hosts.length;
+    const sources = affected.external_sources.length;
     return (
-      `${affected.users.length} usuarios · ${affected.hosts.length} hosts · ` +
-      `${affected.external_sources.length} orígenes externos`
+      `${accounts} ${accounts === 1 ? 'cuenta' : 'cuentas'} · ` +
+      `${hosts} ${hosts === 1 ? 'equipo' : 'equipos'} · ` +
+      `${sources} ${sources === 1 ? 'dirección externa' : 'direcciones externas'}`
     );
   });
 }

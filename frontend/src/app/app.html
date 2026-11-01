@@ -1,10 +1,69 @@
-<header class="app-header">
-  <h1 class="app-title">SOC L2 · Analizador de logs</h1>
-  <p class="app-subtitle">
-    Importe el export del SIEM y revise su contenido real antes de analizarlo.
-  </p>
+<header class="site-header" [class.is-stuck]="stuck()">
+  <div class="site-header__inner">
+    <a class="brand" routerLink="/cargar" aria-label="Análisis SOC 2, ir a la carga">
+      <img src="logo-nhera.png" alt="Nhera" width="280" height="145" />
+      <span class="brand__name">Análisis SOC 2</span>
+    </a>
+    <nav class="nav" aria-label="Pantallas">
+      <a
+        routerLink="/cargar"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        >Cargar</a
+      >
+      <a
+        routerLink="/analisis"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        >Análisis</a
+      >
+      <a
+        routerLink="/informe"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        >Informe</a
+      >
+    </nav>
+  </div>
 </header>
 
 <main class="app-main">
-  <router-outlet />
+  <div class="page">
+    <router-outlet />
+  </div>
 </main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="footer-id">
+      <div class="byline">
+        <span class="byline__name">Karen Gil</span>
+        <span class="byline__role">Analista SOC 2</span>
+      </div>
+      <p class="footer-note">Proyecto final DOJO-WoSEC</p>
+    </div>
+    <nav class="footer-links" aria-label="Perfiles de Karen Gil">
+      <a href="https://github.com/nheradevs" aria-label="GitHub de Karen Gil" title="GitHub">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path
+            d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.22.48-2.69-1.07-2.69-1.07-.36-.92-.89-1.17-.89-1.17-.72-.5.06-.49.06-.49.8.06 1.22.83 1.22.83.71 1.22 1.87.87 2.32.66.07-.52.28-.87.5-1.07-1.77-.2-3.63-.89-3.63-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.28.82 2.15 0 3.07-1.86 3.75-3.64 3.94.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"
+          />
+        </svg>
+      </a>
+      <a
+        href="https://www.linkedin.com/in/karen-gil-g"
+        aria-label="LinkedIn de Karen Gil"
+        title="LinkedIn"
+      >
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path
+            d="M3.4 5.6H1V15h2.4V5.6ZM2.2 1a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8ZM15 9.6c0-2.6-1.4-3.8-3.3-3.8-1.5 0-2.2.8-2.6 1.4V5.6H6.7V15h2.4V9.9c0-1.1.5-1.8 1.5-1.8s1.4.7 1.4 1.8V15H15V9.6Z"
+          />
+        </svg>
+      </a>
+    </nav>
+  </div>
+</footer>

@@ -1,48 +1,63 @@
-.events {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 1rem;
-  background: var(--mat-sys-surface-container-low);
-}
-
-h2 {
-  margin: 0;
-  font: var(--mat-sys-headline-small);
-}
-
-.search-field {
-  max-width: 26rem;
-}
-
-.table-scroll {
-  overflow: auto;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 0.5rem;
-}
-
-table {
-  width: 100%;
-  min-width: 48rem;
-}
-
-td {
-  max-width: 24rem;
+.events-section {
+  margin-top: var(--space-6);
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.table-state,
-.table-total {
-  margin: 0;
-  color: var(--mat-sys-on-surface-variant);
+.events-section__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  padding: var(--space-5);
+  padding-bottom: var(--space-4);
+}
+
+.events-section__head h2 {
+  font-size: var(--text-xl);
+}
+
+.events-section__note {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  margin-top: var(--space-2);
+  max-width: 46ch;
+}
+
+.toolbar {
+  display: flex;
+  align-items: end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.events-progress {
+  --mat-progress-bar-active-indicator-height: 6px;
+  --mat-progress-bar-track-height: 6px;
+  --mat-progress-bar-track-color: var(--color-line);
+  --mat-progress-bar-active-indicator-color: var(--color-medium);
 }
 
 .table-state {
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background: var(--mat-sys-surface-container);
+  padding: 0 var(--space-5) var(--space-5);
+  color: var(--color-text-soft);
+  font-size: var(--text-md);
+}
+
+.events-section__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-line);
+}
+
+.events-empty {
+  padding: 0 var(--space-5) var(--space-6);
 }

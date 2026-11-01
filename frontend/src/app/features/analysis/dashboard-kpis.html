@@ -1,43 +1,43 @@
-<section class="kpis" aria-labelledby="kpis-title">
-  <h3 id="kpis-title">Indicadores del análisis</h3>
+<section class="kpi-section" aria-labelledby="kpis-title">
+  <h2 id="kpis-title" class="visually-hidden">Riesgo del análisis</h2>
 
-  <dl class="kpi-grid">
-    <div class="kpi">
-      <dt>Eventos analizados</dt>
-      <dd class="kpi-events">{{ payload().coverage.events_analysed }}</dd>
-    </div>
+  <div class="kpis">
+    @for (level of levels(); track level.level_key) {
+      <article class="kpi" [attr.data-level]="level.level_key">
+        <p class="kpi__label">
+          <span class="level" [attr.data-level]="level.level_key">{{ level.level }}</span>
+        </p>
+        <p class="kpi__value">{{ level.incidents }}</p>
+        <p class="kpi__meta">
+          {{ level.incidents === 1 ? 'incidente' : 'incidentes' }} ·
+          <b>{{ level.findings }}</b> {{ level.findings === 1 ? 'hallazgo' : 'hallazgos' }}
+        </p>
+      </article>
+    }
+  </div>
 
-    <div class="kpi">
-      <dt>Incidentes por criticidad</dt>
-      <dd class="kpi-levels">
-        @for (level of levels(); track level.level_key) {
-          <span class="kpi-level" [attr.data-level]="level.level_key">
-            {{ level.level }}: {{ level.incidents }}
-          </span>
-        }
-      </dd>
-    </div>
+  <p class="scope-line">
+    <span>
+      <b>{{ payload().coverage.events_analysed }}</b>
+      {{ payload().coverage.events_analysed === 1 ? 'evento' : 'eventos' }}
+    </span>
+    <span>
+      <b class="kpi-findings">{{ payload().coverage.findings }}</b>
+      {{ payload().coverage.findings === 1 ? 'hallazgo' : 'hallazgos' }}
+    </span>
+    <span>
+      <b>{{ payload().coverage.incidents }}</b>
+      {{ payload().coverage.incidents === 1 ? 'incidente' : 'incidentes' }}
+    </span>
+    <span>Ventana del <b>{{ windowStart() }}</b> a <b>{{ windowEnd() }}</b></span>
+  </p>
 
-    <div class="kpi">
-      <dt>Hallazgos</dt>
-      <dd class="kpi-findings">{{ payload().coverage.findings }}</dd>
-    </div>
-
-    <div class="kpi kpi--wide">
-      <dt>Ventana temporal</dt>
-      <dd class="kpi-window">{{ windowLabel() }}</dd>
-    </div>
-
-    <div class="kpi kpi--wide">
-      <dt>Entidades afectadas</dt>
-      <dd class="kpi-affected">{{ affectedLabel() }}</dd>
-    </div>
-  </dl>
+  <p class="card-note kpi-affected">{{ affectedLabel() }} afectadas por los incidentes.</p>
 
   @if (payload().coverage.events_without_timestamp > 0) {
     <p class="kpi-note">
-      {{ payload().coverage.events_without_timestamp }} eventos no tienen timestamp interpretable:
-      cuentan en el total pero no aparecen en la serie por hora.
+      {{ payload().coverage.events_without_timestamp }} eventos no tienen una marca de tiempo
+      interpretable: cuentan en el total pero no aparecen en la serie por hora.
     </p>
   }
 </section>

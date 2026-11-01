@@ -1,5 +1,10 @@
-<article class="report-version" [attr.aria-label]="version().label">
-  <p class="report-version-label">{{ version().label }}</p>
+<article class="report" [attr.aria-label]="version().label">
+  <div class="report__head">
+    <h2>{{ version().label }}</h2>
+    <p class="report__meta">
+      <span>{{ version().sections.length }} secciones</span>
+    </p>
+  </div>
 
   @for (section of version().sections; track section.key) {
     <section class="report-section" [attr.data-section]="section.key">
@@ -18,4 +23,6 @@
       }
     </section>
   }
+
+  <p class="pdf-foot">Karen Gil, Analista SOC 2</p>
 </article>

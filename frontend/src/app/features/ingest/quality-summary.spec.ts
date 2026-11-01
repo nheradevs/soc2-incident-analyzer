@@ -20,7 +20,6 @@ describe('QualitySummary', () => {
     fixture.componentRef.setInput('summary', uploadResponseFixture());
     const content = text();
 
-    expect(content).toContain('SOC_L2_Logs.xlsx');
     expect(content).toContain('715');
     expect(content).toContain('12');
     expect(content).toContain('2026-10-23 07:46:07');
@@ -49,9 +48,13 @@ describe('QualitySummary', () => {
     expect(eventIds.textContent).toContain('IIS-Start (12)');
     expect(eventIds.textContent).toContain('int (690)');
 
-    const nulls = fixture.nativeElement.querySelector('.quality-null-counts') as HTMLElement;
-    expect(nulls.textContent).toContain('Destination: 262');
-    expect(nulls.textContent).toContain('Process_CommandLine: 540');
+    const nulls = Array.from(
+      fixture.nativeElement.querySelectorAll('.quality-null-counts') as NodeListOf<HTMLElement>,
+    )
+      .map((node) => node.textContent ?? '')
+      .join(' | ');
+    expect(nulls).toContain('Destination: 262');
+    expect(nulls).toContain('Process_CommandLine: 540');
   });
 
   it('states honestly that no timestamp failed to parse when the count is zero', () => {

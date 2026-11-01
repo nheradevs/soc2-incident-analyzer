@@ -18,12 +18,34 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('renders the project name in the header and the routed content outlet', () => {
+  it('renders the product name in the header and the routed content outlet', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('header')?.textContent).toContain('SOC L2');
+    expect(compiled.querySelector('header')?.textContent).toContain('Análisis SOC 2');
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
+  });
+
+  it('links the three screens from the header and credits the author in the footer', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const targets = Array.from(compiled.querySelectorAll('.nav a')).map((link) =>
+      link.getAttribute('href'),
+    );
+    expect(targets).toEqual(['/cargar', '/analisis', '/informe']);
+
+    const footer = compiled.querySelector('footer') as HTMLElement;
+    expect(footer.textContent).toContain('Karen Gil');
+    expect(footer.textContent).toContain('Analista SOC 2');
+    const profiles = Array.from(footer.querySelectorAll('a')).map((link) =>
+      link.getAttribute('href'),
+    );
+    expect(profiles).toEqual([
+      'https://github.com/nheradevs',
+      'https://www.linkedin.com/in/karen-gil-g',
+    ]);
   });
 
   it('routes the root path to the Cargar step', () => {

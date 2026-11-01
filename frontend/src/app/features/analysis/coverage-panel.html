@@ -1,9 +1,12 @@
-<section class="coverage" aria-labelledby="coverage-title">
-  <h3 id="coverage-title">Cobertura de detección por categoría</h3>
+<section class="card" aria-labelledby="coverage-title">
+  <div class="card-head">
+    <h2 id="coverage-title">Alcance del análisis</h2>
+    <span class="card-note">{{ coveredCount() }} de {{ categories().length }} categorías</span>
+  </div>
 
-  <ul class="category-list">
+  <div class="category-list">
     @for (category of categories(); track category.category) {
-      <li class="category-row" [attr.data-covered]="category.findings > 0">
+      <span class="category-row" [attr.data-covered]="category.findings > 0">
         <span class="category-label">{{ category.label }}</span>
         <span class="category-counts">
           {{ category.findings }} hallazgos · {{ category.incidents }} incidentes
@@ -11,23 +14,36 @@
         @if (category.findings === 0) {
           <span class="category-uncovered">sin hallazgos en este export</span>
         }
-      </li>
+      </span>
     }
-  </ul>
+  </div>
 
   <p class="coverage-summary">
     {{ coveredCount() }} de {{ categories().length }} categorías con hallazgos. Sin hallazgos:
     {{ uncoveredLabels() }}.
   </p>
 
-  <h3>Cuentas excluidas del ranking de personas</h3>
+  <ul class="list">
+    <li>
+      <span><b>Alcance de entidades.</b> {{ affectedLabel() }}</span>
+    </li>
+    <li>
+      <span>
+        <b>Origen de las conexiones.</b> No hay ranking de direcciones de origen: el origen se
+        informa solo como externo o interno para no atribuir a una dirección interna un papel
+        que el export no sostiene.
+      </span>
+    </li>
+  </ul>
+
+  <h3 class="excluded-title">Cuentas excluidas del ranking de personas</h3>
 
   <ul class="excluded-list">
     @for (account of excludedAccounts(); track account.principal) {
       <li class="excluded-account">
         <span class="excluded-principal">{{ account.principal }}</span>
         <span class="excluded-reason">{{ account.reason }}</span>
-        <span class="excluded-events">{{ account.events }} eventos</span>
+        <span class="excluded-events num">{{ account.events }} eventos</span>
       </li>
     } @empty {
       <li class="excluded-account">Ninguna cuenta quedó excluida del ranking.</li>

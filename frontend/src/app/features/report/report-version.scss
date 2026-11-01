@@ -1,44 +1,94 @@
-.report-version {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.report {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  min-width: 0;
 }
 
-.report-version-label {
-  margin: 0;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-label-large);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.report__head {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+}
+
+.report__head h2 {
+  font-size: var(--text-2xl);
+}
+
+.report__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+}
+
+.report__meta b {
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
 }
 
 .report-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 1.25rem 1.5rem;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 1rem;
-  background: var(--mat-sys-surface-container-low);
+  padding-block: var(--space-5);
+  max-width: 74ch;
 }
 
-.report-section-title {
-  margin: 0;
-  font: var(--mat-sys-title-medium);
+.report-section + .report-section {
+  border-top: 1px solid var(--color-line);
 }
 
-.report-paragraph {
-  margin: 0;
-  font: var(--mat-sys-body-medium);
-  line-height: 1.6;
+.report-section:last-of-type {
+  padding-bottom: var(--space-4);
+}
+
+.report-section h3 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-3);
+}
+
+.report-paragraph,
+.report-list li {
+  font-size: var(--text-read);
+  line-height: var(--leading-read);
+  overflow-wrap: break-word;
+}
+
+.report-paragraph + .report-paragraph {
+  margin-top: var(--space-3);
 }
 
 .report-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin: 0;
-  padding-inline-start: 1.25rem;
-  font: var(--mat-sys-body-medium);
-  line-height: 1.55;
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+  margin-top: var(--space-3);
+}
+
+.report-list li {
+  display: grid;
+  grid-template-columns: 0.5rem minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.report-list li::before {
+  content: '';
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: var(--radius-full);
+  background: var(--color-muted);
+  margin-top: 0.7em;
+}
+
+.pdf-foot {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+
+@container (max-width: 34rem) {
+  .report__meta {
+    font-size: var(--text-xs);
+  }
 }

@@ -9,8 +9,8 @@
 import { NarrativeState, ReportVersionKey } from '../../core/models/report.models';
 
 const TAB_LABELS: Record<ReportVersionKey, string> = {
-  ejecutiva: 'Informe ejecutivo',
-  tecnica: 'Informe técnico',
+  ejecutiva: 'Versión ejecutiva',
+  tecnica: 'Versión técnica',
 };
 
 /** Spanish label of the toggle that selects one audience version. */

@@ -1,86 +1,68 @@
+:host {
+  display: block;
+}
+
 .kpis {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 1rem;
-  background: var(--mat-sys-surface-container-low);
-}
-
-h3 {
-  margin: 0;
-  font: var(--mat-sys-title-medium);
-}
-
-.kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: 0.75rem;
-  margin: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
 }
 
 .kpi {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.kpi__label {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 0.75rem;
-  background: var(--mat-sys-surface);
+  align-items: center;
+  gap: var(--space-2);
 }
 
-.kpi--wide {
-  grid-column: span 1;
+.kpi__value {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-dt {
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-label-medium);
+.kpi__meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
 }
 
-dd {
-  margin: 0;
-  font: var(--mat-sys-title-medium);
+.kpi__meta b {
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
 }
 
-.kpi-events,
-.kpi-findings {
-  font: var(--mat-sys-headline-medium);
-}
-
-.kpi-levels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.kpi-level {
-  padding: 0.15rem 0.5rem;
-  border-radius: 1rem;
-  border: 1px solid currentcolor;
-  font: var(--mat-sys-label-large);
-  white-space: nowrap;
-}
-
-.kpi-level[data-level='critical'] {
-  color: #b3261e;
-}
-
-.kpi-level[data-level='high'] {
-  color: #b45309;
-}
-
-.kpi-level[data-level='medium'] {
-  color: #8a6100;
-}
-
-.kpi-level[data-level='low'] {
-  color: #2e7d32;
+.kpi-affected {
+  margin-top: var(--space-3);
 }
 
 .kpi-note {
-  margin: 0;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-body-small);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  max-width: 62ch;
+}
+
+@container (max-width: 62rem) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 34rem) {
+  .kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

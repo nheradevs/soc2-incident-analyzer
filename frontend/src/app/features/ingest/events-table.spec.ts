@@ -59,12 +59,12 @@ describe('EventsTable', () => {
     );
     expect(headers).toEqual([
       'Log_ID',
-      'Timestamp',
-      'Hostname',
-      'Event_ID',
-      'event_family',
-      'ip_class',
-      'bytes_out',
+      'Marca de tiempo',
+      'Equipo',
+      'Evento',
+      'Familia de evento',
+      'Clase de IP',
+      'Bytes de salida',
     ]);
     expect(bodyRows().length).toBe(2);
     expect(bodyRows()[0].textContent).toContain('L-001');

@@ -1,108 +1,162 @@
 <section class="charts" aria-labelledby="charts-title">
-  <h3 id="charts-title">Gráficos del export</h3>
+  <h2 id="charts-title" class="visually-hidden">Contexto del análisis</h2>
 
-  <div class="chart-grid">
-    <article class="chart-card">
-      <h4>Eventos por hora</h4>
-      <app-chart-canvas
-        [config]="hourly()"
-        description="Eventos por hora del export analizado"
-      />
-      <p class="chart-values">{{ hourlyNote() }}</p>
-    </article>
+  <article class="chart-card">
+    <h3>Eventos por hora</h3>
+    <p class="chart-note">
+      {{ hourly().length }} tramos horarios. Toca una barra para ver qué pasó en ese tramo; el
+      pico está a las {{ peakHour()?.label }}.
+    </p>
 
-    <article class="chart-card">
-      <h4>Distribución por criticidad</h4>
-      <app-chart-canvas
-        [config]="levels()"
-        description="Incidentes por nivel de criticidad"
-      />
-      <ul class="chart-values chart-values--list">
-        @for (level of payload().risk.levels; track level.level_key) {
-          <li class="level-value">
-            <span>{{ level.level }}</span>
-            <span>{{ level.incidents }} incidentes · {{ level.findings }} hallazgos</span>
-          </li>
-        }
-      </ul>
-    </article>
-
-    <article class="chart-card">
-      <h4>Top hosts</h4>
-      <app-chart-canvas [config]="hosts()" description="Eventos por host, de mayor a menor" />
-      <ul class="chart-values chart-values--list">
-        @for (host of payload().charts.top_hosts; track host.host) {
-          <li class="host-value"><span>{{ host.host }}</span><span>{{ host.events }}</span></li>
-        } @empty {
-          <li class="host-value">El export no trae hosts.</li>
-        }
-      </ul>
-    </article>
-
-    <article class="chart-card">
-      <h4>Cuentas humanas más activas</h4>
-      <app-chart-canvas
-        [config]="users()"
-        description="Eventos por cuenta humana, de mayor a menor"
-      />
-      <ul class="chart-values chart-values--list">
-        @for (user of payload().charts.top_users; track user.user) {
-          <li class="user-value"><span>{{ user.user }}</span><span>{{ user.events }}</span></li>
-        } @empty {
-          <li class="user-value">El export no trae cuentas humanas.</li>
-        }
-      </ul>
-    </article>
-
-    <article class="chart-card">
-      <h4>Tipos de ataque detectados</h4>
-      <app-chart-canvas
-        [config]="attackTypes()"
-        description="Hallazgos por tipo de ataque detectado"
-      />
-      <ul class="chart-values chart-values--list">
-        @for (type of payload().charts.attack_types; track type.code) {
-          <li class="attack-type-value">
-            <span>{{ type.label }} ({{ type.code }})</span>
-            <span>{{ type.findings }} hallazgos · {{ type.events }} eventos</span>
-          </li>
-        } @empty {
-          <li class="attack-type-value">No se detectaron tipos de ataque en este export.</li>
-        }
-      </ul>
-    </article>
-
-    <article class="chart-card chart-card--wide">
-      <h4>Volumen saliente por destino externo</h4>
-      <app-chart-canvas [config]="outbound()" [description]="outboundDescription()" />
-
-      <ul class="chart-values chart-values--list outbound-list">
-        @for (destination of outboundItems(); track destination.destination + ':' + destination.port) {
-          <li
-            class="outbound-item"
-            [class.outbound-item--unknown]="!hasMeasuredBytes(destination)"
+    <div class="plot-scroll">
+      <div class="plot" role="group" aria-label="Eventos por hora. Elige un tramo para ver su detalle.">
+        @for (bucket of hourly(); track bucket.hour) {
+          <button
+            type="button"
+            class="col"
+            [attr.aria-pressed]="isActiveHour(bucket)"
+            [attr.data-hour]="bucket.hour"
+            (click)="selectHour(bucket.hour)"
           >
-            <span class="outbound-destination">
-              {{ destination.destination }}{{ portLabel(destination.port) }}
-            </span>
-            <span class="outbound-events">{{ destination.events }} eventos</span>
+            <span class="col__value">{{ bucket.events }}</span>
+            <span class="col__bar" [style.height.px]="barHeight(bucket.events)"></span>
+          </button>
+        }
+      </div>
+      <div class="axis" aria-hidden="true">
+        @for (bucket of hourly(); track bucket.hour) {
+          <span>{{ bucket.label }}</span>
+        }
+      </div>
+    </div>
+
+    <p class="chart-hint">Desliza el gráfico para ver los siete tramos.</p>
+
+    @if (hourDetail(); as detail) {
+      <div class="hour-detail" aria-live="polite">
+        <p class="hour-detail__head">
+          <span class="hour-detail__time">{{ detail.bucket.label }}</span>
+          <span class="hour-detail__count">{{ detail.bucket.events }} {{ detail.bucket.events === 1 ? 'evento' : 'eventos' }}</span>
+          @if (detail.isPeak) {
+            <span class="hour-detail__badge">Pico del día</span>
+          }
+        </p>
+        <p class="hour-detail__body">
+          {{ detail.percentage }} % de los {{ payload().coverage.events_analysed }} eventos.
+        </p>
+        @if (detail.incidents.length === 0) {
+          <p class="hour-detail__incidents">Sin incidentes en este tramo.</p>
+        } @else {
+          <p class="hour-detail__incidents">
+            {{
+              detail.incidents.length === 1
+                ? 'Un incidente en el tramo: '
+                : detail.incidents.length + ' incidentes en el tramo: '
+            }}
+            @for (id of detail.incidents; track id; let index = $index; let last = $last) {
+              <span class="id-token">{{ id }}</span>{{ last ? '.' : index === detail.incidents.length - 2 ? ' e ' : ', ' }}
+            }
+          </p>
+        }
+      </div>
+    }
+  </article>
+
+  <article class="chart-card">
+    <h3>Tipos de hallazgo</h3>
+    <p class="chart-note">
+      Los detectores que produjeron hallazgos, por cantidad. El identificador del detector queda
+      a la vista para poder citarlo en el informe. El color de la barra es el impacto máximo que
+      la matriz de riesgo asigna a ese detector.
+    </p>
+
+    <ul class="legend" aria-label="Criticidad del detector">
+      @for (level of attackTypeLegend(); track level) {
+        <li><span class="level" [attr.data-level]="level">{{ levelLabel(level) }}</span></li>
+      }
+    </ul>
+
+    <div class="hbars">
+      @for (type of attackTypeBars(); track type.code) {
+        <div class="hbar" [attr.data-level]="type.level">
+          <span class="hbar__label" [title]="type.code + ' · ' + type.label">
+            {{ type.code }} · {{ type.label }}
+          </span>
+          <span class="hbar__track">
+            <span class="hbar__fill" [style.width.%]="type.width"></span>
+          </span>
+          <span class="hbar__value">{{ type.findings }}</span>
+        </div>
+      } @empty {
+        <p class="card-note">No se detectaron tipos de hallazgo en este export.</p>
+      }
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <h3>Equipos con más eventos</h3>
+    <p class="chart-note">
+      Volumen de eventos por equipo. El color indica la criticidad del incidente más grave que
+      toca al equipo; en gris, el equipo aparece en el export pero en ningún incidente.
+    </p>
+
+    <ul class="legend" aria-label="Criticidad del incidente por equipo">
+      @for (level of hostLegend(); track level) {
+        <li>
+          <span class="level" [attr.data-level]="level">{{ hostLevelLabel(level) }}</span>
+        </li>
+      }
+    </ul>
+
+    <div class="hbars">
+      @for (host of hostBars(); track host.host) {
+        <div class="hbar" [attr.data-level]="host.level">
+          <span class="hbar__label">{{ host.host }}</span>
+          <span class="hbar__track">
+            <span class="hbar__fill" [style.width.%]="host.width"></span>
+          </span>
+          <span class="hbar__value">{{ host.events }}</span>
+        </div>
+      } @empty {
+        <p class="card-note">El export no trae equipos con eventos.</p>
+      }
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <h3>Salida a destinos externos</h3>
+    <p class="chart-note">
+      Destinos externos con tráfico registrado. Un destino sin bytes medidos se informa como no
+      registrado, nunca como cero.
+    </p>
+
+    <div class="dest">
+      @for (destination of outboundItems(); track destination.destination + ':' + destination.port) {
+        <div class="dest__row" [class.outbound-item--unknown]="!hasMeasuredBytes(destination)">
+          <p class="dest__ip">
+            {{ destination.destination }}<span class="dest__port">{{ portLabel(destination.port) }}</span>
+          </p>
+          <p class="dest__meta">
             @if (hasMeasuredBytes(destination)) {
-              <span class="outbound-bytes">{{ bytesLabel(destination.bytes_out) }}</span>
+              <b>{{ destination.events_with_bytes }}</b> eventos con bytes ·
+              <b class="outbound-bytes">{{ formatInteger(destination.bytes_out) }} bytes</b>
+              de salida
             } @else {
+              <b>{{ destination.events }}</b> eventos ·
               <span class="outbound-unknown">bytes no registrados en el export</span>
             }
-          </li>
-        } @empty {
-          <li class="outbound-empty">No hay destinos externos en este export.</li>
-        }
-      </ul>
+          </p>
+        </div>
+      } @empty {
+        <p class="card-note">No hay destinos externos en este export.</p>
+      }
+    </div>
 
-      <p class="outbound-note">
-        Total medido hacia destinos externos: {{ bytesLabel(outboundTotal().total_bytes) }} en
-        {{ outboundTotal().total_events }} eventos. Los destinos marcados como «bytes no
-        registrados» no aportan volumen: sus filas no traen la columna de bytes salientes, así que
-        no se dibujan como 0 MB.
+    @if (outboundItems().length > 0) {
+      <p class="chart-note outbound-note">
+        En total, {{ outboundTotal().total_events }} eventos de salida con
+        {{ formatInteger(outboundTotal().total_bytes) }} bytes medidos.
       </p>
-    </article>
-  </div>
+    }
+  </article>
 </section>
