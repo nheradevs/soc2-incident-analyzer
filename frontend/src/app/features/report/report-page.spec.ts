@@ -63,7 +63,8 @@ describe('ReportPage', () => {
     expect(element().querySelector('.report-failure')).not.toBeNull();
     const busy = element().querySelector('.report-failure-actions button') as HTMLButtonElement;
     expect(busy.disabled).toBe(true);
-    expect(busy.textContent).toContain('Reintentando');
+    expect(busy.getAttribute('aria-busy')).toBe('true');
+    expect(busy.textContent?.trim()).toBe('Reintentar');
 
     http
       .expectOne('/api/report')

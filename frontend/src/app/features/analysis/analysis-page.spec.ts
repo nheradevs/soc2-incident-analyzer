@@ -77,7 +77,9 @@ describe('AnalysisPage', () => {
     expect(element().querySelector('.analysis-loading')).toBeNull();
     const busy = element().querySelector('.analysis-failure-actions button') as HTMLButtonElement;
     expect(busy.disabled).toBe(true);
-    expect(busy.textContent).toContain('Reintentando');
+    expect(busy.getAttribute('aria-busy')).toBe('true');
+    // The label must not change: a text swap resizes the button and shifts its neighbours.
+    expect(busy.textContent?.trim()).toBe('Reintentar el análisis');
 
     http
       .expectOne('/api/analyze')
@@ -86,7 +88,7 @@ describe('AnalysisPage', () => {
 
     const after = element().querySelector('.analysis-failure-actions button') as HTMLButtonElement;
     expect(after.disabled).toBe(false);
-    expect(after.textContent).toContain('Reintentar el análisis');
+    expect(after.getAttribute('aria-busy')).toBe('false');
   });
 
   it('renders the KPIs measured by the payload, with no invented section', () => {

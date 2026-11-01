@@ -422,6 +422,17 @@ table {
     color var(--duration) var(--ease);
 }
 
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* A busy button keeps its box: no text change, no reflow of the action row. */
+.btn[aria-busy='true'] {
+  cursor: progress;
+}
+
 .btn--primary {
   background: var(--color-text);
   color: var(--color-bg);
