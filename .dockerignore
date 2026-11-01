@@ -1,0 +1,35 @@
+# Keep the build context small: the frontend build reinstalls its own
+# dependencies and the backend syncs from uv.lock inside the image, so nothing
+# generated or installed locally is sent to the daemon.
+
+# VCS and harness metadata
+.git
+.gitignore
+.atl
+
+# Node / Angular: dependencies and previous builds
+**/node_modules
+**/dist
+**/.angular
+frontend/.vscode
+
+# Python: environment and caches
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/*.egg-info
+
+# Generated analysis output (fixtures, PDFs) never belongs in an image
+backend/out
+
+# Documentation, design package and task log are not runtime inputs
+design
+docs
+odd
+
+# Local secrets: the key is injected at run time, never baked into a layer
+.env
+.env.*

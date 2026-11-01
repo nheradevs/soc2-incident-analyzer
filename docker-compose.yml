@@ -1,0 +1,75 @@
+# Single-server deployment: Caddy (`web`) is the only published service, the
+# FastAPI process (`api`) is reachable only from the compose network.
+#
+# No secret lives in this file: NAN_API_KEY is optional and read from the
+# operator's environment (a root `.env`, gitignored, or `export NAN_API_KEY=…`)
+# and passed through empty when absent, which the app treats as "not configured".
+#
+# Usage: docker compose up -d --build   (see docs/deploy-gcp.md)
+
+name: soc2
+
+services:
+  api:
+    build:
+      context: .
+      target: api
+    image: soc2-analyzer-api:local
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      # Optional assisted writing. Empty string = no key = deterministic report.
+      NAN_API_KEY: ${NAN_API_KEY:-}
+      NAN_BASE_URL: ${NAN_BASE_URL:-https://api.nan.builders/v1}
+      NAN_MODEL: ${NAN_MODEL:-deepseek-v4-flash}
+      # Trust X-Forwarded-For only from the Caddy container's fixed address, so
+      # the per-client rate limiter sees the real client. Keep this in sync with
+      # `web.networks.edge.ipv4_address` below.
+      FORWARDED_ALLOW_IPS: 172.28.0.10
+    healthcheck:
+      # python:slim has no curl; urllib is enough for a liveness probe.
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - edge
+
+  web:
+    build:
+      context: .
+      target: web
+    image: soc2-analyzer-web:local
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      # Only used once a real domain replaces the `:80` block in the Caddyfile.
+      - "443:443"
+    volumes:
+      # Certificates and Caddy state survive `docker compose down`.
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      edge:
+        # Fixed address so the API can restrict FORWARDED_ALLOW_IPS to it. If
+        # this subnet collides with something on the host, change both values.
+        ipv4_address: 172.28.0.10
+
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+volumes:
+  caddy_data:
+  caddy_config:

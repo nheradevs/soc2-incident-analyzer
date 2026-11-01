@@ -118,6 +118,28 @@ Measured on the development machine: 50,050 rows load in 7.5 s, detect in 17.6 s
 0.2 s (25 s end to end, against the FSD's "< 30 s" claim). The real 715-row export analyses in
 well under a second.
 
+## Deploy
+
+La aplicación se publica en **un único servidor** con dos contenedores: `web` (Caddy, lo único
+accesible desde Internet, sirve el bundle Angular y hace de proxy de `/api/*`) y `api` (FastAPI, sin
+puertos publicados). No hay secretos en el repositorio: `NAN_API_KEY` es opcional y se pasa por
+variable de entorno.
+
+**Requisito de máquina:** una VM con **1 GB de RAM** (por ejemplo una GCP `e2-micro`, 2 vCPU
+compartidas, 30 GB de disco) sirve para ejecutar la aplicación, pero **no** para compilarla. El
+`Dockerfile` es multi-etapa y limita el heap de Node a 768 MB, así que la primera construcción en
+una máquina tan pequeña **necesita un archivo de swap de unos 2 GB** o el build muere por falta de
+memoria.
+
+```bash
+git clone https://github.com/ORG/REPO.git soc2 && cd soc2
+docker compose up -d --build      # publica el 80 (y el 443 para HTTPS con dominio real)
+```
+
+Los pasos completos —firewall 80/443, IP externa estática, swap, instalación de Docker, clonado,
+actualización tras `git push`, HTTPS con dominio propio y el detalle del límite de peticiones
+detrás del proxy— están en **[`docs/deploy-gcp.md`](docs/deploy-gcp.md)**.
+
 ## What the analysis found
 
 Six separate incidents in 5 h 58 min of a single day (2026-10-23, 07:46:07 → 13:44:06), 46

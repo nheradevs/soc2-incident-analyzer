@@ -1,0 +1,63 @@
+# Caddy is the only public entry point of the deployment.
+#
+# One origin serves both halves: the Angular bundle as static files and
+# `/api/*` reverse-proxied to the `api` container. The frontend calls `/api`
+# with a relative path (frontend/proxy.conf.json only exists for `ng serve`),
+# so no CORS configuration is needed in production.
+#
+# Swap the `:80` site block below for the commented real-domain block once DNS
+# points at the instance; that is the only change needed to get automatic HTTPS.
+
+{
+	# Uncomment and set a real address to register the ACME account with a
+	# contact. Not required for the certificate to be issued.
+	# email admin@example.com
+}
+
+# Default: plain HTTP on port 80, for an instance reached by IP address.
+:80 {
+	encode zstd gzip
+	root * /srv
+
+	# The API keeps its own paths: `/api/health` reaches the backend unchanged.
+	# Caddy adds X-Forwarded-For/Proto/Host, and uvicorn is told to trust them
+	# only from this container (FORWARDED_ALLOW_IPS in docker-compose.yml), so
+	# the rate limiter buckets per client instead of per proxy.
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+
+	# SPA fallback: `/cargar`, `/analisis`, `/informe` and any other client
+	# route return index.html with a 200 instead of a 404. Real files win.
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Hashed bundles never change; the shell must be revalidated every time.
+	@bundles path *.js *.css
+	header @bundles Cache-Control "public, max-age=31536000, immutable"
+	header /index.html Cache-Control "no-cache"
+}
+
+# Real domain with automatic HTTPS (Let's Encrypt): use this block instead of
+# the `:80` block above, keep the same handlers, and make sure ports 80 and 443
+# are open. Caddy obtains and renews the certificate by itself.
+#
+# analyzer.example.com {
+# 	encode zstd gzip
+# 	root * /srv
+#
+# 	handle /api/* {
+# 		reverse_proxy api:8000
+# 	}
+#
+# 	handle {
+# 		try_files {path} /index.html
+# 		file_server
+# 	}
+#
+# 	@bundles path *.js *.css
+# 	header @bundles Cache-Control "public, max-age=31536000, immutable"
+# 	header /index.html Cache-Control "no-cache"
+# }
