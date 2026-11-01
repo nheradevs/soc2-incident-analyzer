@@ -41,18 +41,18 @@ TEXT_PAYLOAD = b"Log_ID,Timestamp\nEVT-00001,2026-10-23 07:46:07\n"
 
 NOT_A_ZIP_MESSAGE = (
     "El contenido del archivo no es un libro .xlsx válido: no es un contenedor ZIP. "
-    "Verifique que el archivo no se haya renombrado desde otro formato."
+    "Verifica que el archivo no se haya renombrado desde otro formato."
 )
 OLD_XLS_MESSAGE = (
     "El archivo es un libro .xls antiguo (formato binario OLE2). "
-    "Ábralo en Excel y guárdelo como .xlsx antes de subirlo."
+    "Ábrelo en Excel y guárdalo como .xlsx antes de subirlo."
 )
 NO_WORKBOOK_MESSAGE = (
     "El archivo es un ZIP, pero no contiene un libro de Excel: "
     "falta [Content_Types].xml o la parte xl/ del libro."
 )
 RATE_LIMIT_MESSAGE = (
-    "Demasiadas solicitudes en poco tiempo. Espere unos segundos y vuelva a intentarlo."
+    "Demasiadas solicitudes en poco tiempo. Espera unos segundos y vuelve a intentarlo."
 )
 
 LIMIT_FIELDS = {

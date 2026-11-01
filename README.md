@@ -11,7 +11,7 @@ DNS or netflow** that produced it.
 Every claim the app makes is tied to a `Log_ID` from the file. Nothing is asserted because a rule
 "feels" right or because a model said so.
 
-Stack: FastAPI + pandas (Python 3.12) · Angular 20 + Angular Material + Chart.js · ReportLab.
+Stack: FastAPI + pandas (Python 3.12) · Angular 20 + Angular Material + barras CSS · ReportLab.
 
 ## How it works
 
@@ -100,7 +100,7 @@ curl -s -o informe.pdf http://localhost:8000/api/report/pdf        # nine sectio
 **Tests and lint:**
 
 ```bash
-cd backend && uv run pytest -q      # 280 tests
+cd backend && uv run pytest -q      # 281 tests
 cd backend && uv run ruff check .
 cd frontend && npm test             # Karma + a local Chrome; add `-- --watch=false` for one run
 ```
@@ -201,8 +201,8 @@ mitigation is a closed prompt plus a conservative fallback, not NLP.
 ## Repository layout
 
 ```
-backend/        FastAPI: ingest → detection → risk → reporting → export (280 tests)
-frontend/       Angular 20 + Angular Material + Chart.js
+backend/        FastAPI: ingest → detection → risk → reporting → export (281 tests)
+frontend/       Angular 20 + Angular Material + gráficos de barras CSS
 docs/FSD.md     Functional spec, measured against the real export (Spanish)
 odd/tasks/      Task log with the decisions and the defects found along the way
 scripts/        Synthetic volume fixture generator (never used by the report)

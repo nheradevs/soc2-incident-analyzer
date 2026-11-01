@@ -1,6 +1,16 @@
 // Design tokens of the three-screen redesign. Imported once, as the single
 // source of every colour, font, spacing and radius used by the application.
-@use '../../../design/soc2-analisis/tokens.css';
+//
+// `./styles/tokens.css` is a vendored copy, so `frontend/` builds on its own
+// (deploy, copy, CI without the full repository tree). The source of truth is
+// `design/soc2-analisis/tokens.css` at the repository root and the copy must
+// stay byte-identical to it. To refresh it, run from the repository root:
+//
+//   cp design/soc2-analisis/tokens.css frontend/src/styles/tokens.css
+//
+// Never edit the vendored copy directly: a local edit silently diverges from
+// the design package and is lost on the next refresh.
+@use './styles/tokens.css';
 
 // Angular Material keeps its own system variables for the few components the
 // redesign still uses (table, sort header, paginator). They are mapped onto the

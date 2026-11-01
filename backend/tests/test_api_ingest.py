@@ -13,6 +13,7 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
+import app.api.router as router
 from app.api.session import session_store
 from app.config import Settings, get_settings
 from app.ingest.loader import REQUIRED_COLUMNS
@@ -123,7 +124,7 @@ def test_empty_upload_is_rejected(client: TestClient) -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == (
-        "El archivo está vacío. Seleccione un export .xlsx válido."
+        "El archivo está vacío. Selecciona un export .xlsx válido."
     )
     assert client.get("/api/events").status_code == 409
 
@@ -141,12 +142,32 @@ def test_workbook_without_the_siem_schema_is_rejected(
     assert client.get("/api/events").status_code == 409
 
 
+def test_unreadable_workbook_is_rejected_with_the_damage_message(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A workbook that validates as a ZIP but fails to parse is a damaged file."""
+
+    def broken_loader(_stream: Any) -> Any:
+        raise ValueError("unreadable sheet")
+
+    monkeypatch.setattr(router, "load_export", broken_loader)
+
+    response = upload(client)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "No se pudo leer el archivo como un libro .xlsx válido. "
+        "Verifica que no esté dañado y vuelve a exportarlo."
+    )
+    assert client.get("/api/events").status_code == 409
+
+
 def test_events_before_any_upload_is_a_clean_conflict(client: TestClient) -> None:
     response = client.get("/api/events")
 
     assert response.status_code == 409
     assert response.json()["detail"] == (
-        "Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo."
+        "Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo."
     )
 
 

@@ -136,7 +136,10 @@ Motor **determinístico por reglas** sobre el DataFrame normalizado; cada detect
 
 ### RF4 — Dashboard
 - KPIs: total de eventos, incidentes por criticidad, usuarios/hosts afectados, ventana temporal, cobertura de detección por categoría.
-- Gráficos interactivos (Chart.js): eventos por tiempo, distribución por criticidad, top hosts, top usuarios humanos, tipos de ataque detectados, volumen saliente por destino externo.
+- Cuatro gráficos de barras hechos con CSS sobre los agregados que ya devuelve el payload, sin librería de gráficos: eventos por hora, tipos de hallazgo detectados, equipos con más eventos y salida a destinos externos.
+- El gráfico de eventos por hora es también un selector: cada tramo es un botón, el tramo activo es estado del componente y el pico es el estado inicial. El detalle muestra el porcentaje sobre el total y los incidentes que cruzan el tramo.
+- El color de las barras sale de la matriz de riesgo, no del payload: el impacto máximo que la matriz asigna al detector, en "tipos de hallazgo", y la criticidad del incidente más grave que toca al equipo, en "equipos con más eventos".
+- Un destino externo cuyos registros no traen `bytes_out` se informa como bytes no registrados en el export, nunca como cero tráfico.
 - **No** se muestra "top IPs de origen" como indicador de riesgo: en este archivo no es informativo (§4.8). Se muestra sí como "origen externo vs interno".
 - Lista de incidentes con drill-down: clic → detalle del hallazgo con su evidencia (`Log_ID`).
 
@@ -254,7 +257,7 @@ Seis clústeres distintos, verificados por lectura directa. Sirven como **caso d
 ## 9. Arquitectura
 
 ```
-frontend/  Angular 17+ + Angular Material + Chart.js
+frontend/  Angular 20 + Angular Material + gráficos de barras CSS
    │  HTTP (JSON)
    ▼
 backend/   FastAPI (Python 3.10+)

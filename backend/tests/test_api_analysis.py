@@ -33,7 +33,7 @@ EXPORT = Path(__file__).resolve().parents[2] / "SOC_L2_Logs_Ampliados_Multiples_
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 NO_SESSION_MESSAGE = (
-    "Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo."
+    "Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo."
 )
 EXCLUDED_PRINCIPALS = {"-", "IIS APPPOOL\\DefaultAppPool"}
 

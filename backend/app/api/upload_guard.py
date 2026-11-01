@@ -33,11 +33,11 @@ WORKBOOK_PREFIX = "xl/"
 
 NOT_A_ZIP_MESSAGE = (
     "El contenido del archivo no es un libro .xlsx válido: no es un contenedor ZIP. "
-    "Verifique que el archivo no se haya renombrado desde otro formato."
+    "Verifica que el archivo no se haya renombrado desde otro formato."
 )
 OLD_XLS_MESSAGE = (
     "El archivo es un libro .xls antiguo (formato binario OLE2). "
-    "Ábralo en Excel y guárdelo como .xlsx antes de subirlo."
+    "Ábrelo en Excel y guárdalo como .xlsx antes de subirlo."
 )
 NO_WORKBOOK_MESSAGE = (
     "El archivo es un ZIP, pero no contiene un libro de Excel: "

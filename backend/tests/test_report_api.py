@@ -27,7 +27,7 @@ from app.reporting.narrative import NarrativeClient
 EXPORT = Path(__file__).resolve().parents[2] / "SOC_L2_Logs_Ampliados_Multiples_Incidentes.xlsx"
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 NO_SESSION_MESSAGE = (
-    "Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo."
+    "Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo."
 )
 
 API_KEY = "test-key-do-not-leak-0b2f"

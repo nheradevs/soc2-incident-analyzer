@@ -38,7 +38,7 @@ ORDER_ASC = "asc"
 ORDER_DESC = "desc"
 
 NO_SESSION_MESSAGE = (
-    "Todavía no se ha cargado ningún archivo. Suba un export .xlsx y vuelva a intentarlo."
+    "Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo."
 )
 
 UNKNOWN_INCIDENT_MESSAGE = "No existe un incidente con el identificador «{incident_id}»."
@@ -113,7 +113,7 @@ async def upload_export(
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El archivo está vacío. Seleccione un export .xlsx válido.",
+            detail="El archivo está vacío. Selecciona un export .xlsx válido.",
         )
     if len(payload) > max_bytes:
         raise _too_large(settings)
@@ -139,7 +139,7 @@ async def upload_export(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
                 "No se pudo leer el archivo como un libro .xlsx válido. "
-                "Verifique que no esté dañado y vuelva a exportarlo."
+                "Verifica que no esté dañado y vuelve a exportarlo."
             ),
         ) from error
 

@@ -30,7 +30,7 @@ from fastapi import Depends, HTTPException, Request, status
 from app.config import Settings, get_settings
 
 RATE_LIMIT_MESSAGE = (
-    "Demasiadas solicitudes en poco tiempo. Espere unos segundos y vuelva a intentarlo."
+    "Demasiadas solicitudes en poco tiempo. Espera unos segundos y vuelve a intentarlo."
 )
 
 UPLOAD_BUCKET = "upload"
