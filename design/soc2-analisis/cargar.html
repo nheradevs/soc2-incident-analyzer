@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Análisis SOC 2 · Cargar</title>
+<meta name="description" content="Carga del export del SIEM y revisión de la calidad de los datos.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000000'/><text x='16' y='24' font-family='Poppins,Segoe UI,sans-serif' font-size='21' font-weight='600' text-anchor='middle' fill='%23ffffff'>N</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600&display=swap">
+<style>
+/* ---------- Tokens, identical to tokens.css ---------- */
+:root {
+  --color-bg: #0e161b;
+  --color-surface: #162022;
+  --color-card: #232e30;
+  --color-line: #314048;
+  --color-muted: #56666f;
+  --color-text: #e4ebed;
+  --color-text-soft: #a9b6bb;
+  --color-critical: #e08370;
+  --color-high: #cfa05a;
+  --color-medium: #8fadb9;
+  --color-low: #a9a89f;
+  --font-heading: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-base: 1rem;
+  --text-read: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
+  --text-3xl: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  --text-4xl: clamp(2.125rem, 1.4rem + 3vw, 3.25rem);
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-read: 1.7;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --shell: 1240px;
+  --shell-narrow: 760px;
+  --section-gap: clamp(3rem, 6vw, 5.5rem);
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 999px;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 18px 40px -28px rgba(0, 0, 0, 0.85);
+  --shadow-header: 0 20px 40px -34px rgba(0, 0, 0, 0.9);
+  --header-stuck: rgba(14, 22, 27, 0.86);
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --duration: 160ms;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-read);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); letter-spacing: -0.01em; }
+h4 { font-size: var(--text-lg); font-weight: var(--weight-medium); letter-spacing: -0.01em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+strong { font-weight: var(--weight-semibold); }
+a { color: var(--color-text); text-decoration-thickness: 1px; text-underline-offset: 0.18em; text-decoration-color: var(--color-line); }
+a:hover { text-decoration-color: var(--color-text-soft); }
+:focus-visible { outline: 2px solid var(--color-medium); outline-offset: 3px; border-radius: var(--radius-xs); }
+table { font-variant-numeric: tabular-nums; }
+.num { font-variant-numeric: tabular-nums; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* ---------- Shell ---------- */
+.shell { width: min(var(--shell), 100% - 2 * var(--gutter)); margin-inline: auto; }
+.page { width: min(var(--shell), 100% - 2 * var(--gutter)); margin-inline: auto; container-type: inline-size; }
+
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--color-bg);
+  container-type: inline-size;
+  transition: background var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.site-header.is-stuck { background: var(--header-stuck); box-shadow: var(--shadow-header); }
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: min(var(--shell), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  padding-block: var(--space-4);
+}
+.brand { display: flex; align-items: center; gap: var(--space-4); text-decoration: none; flex: 0 0 auto; }
+.brand img { display: block; width: 74px; height: auto; }
+.brand__name {
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--color-line);
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1.3;
+  color: var(--color-text-soft);
+  max-width: none;
+  white-space: nowrap;
+}
+.nav { display: flex; align-items: center; gap: var(--space-5); margin-left: auto; }
+.nav a {
+  font-size: var(--text-md);
+  color: var(--color-text-soft);
+  text-decoration: none;
+  padding-block: var(--space-2);
+  border-bottom: 1px solid transparent;
+  transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.nav a:hover { color: var(--color-text); }
+.nav a[aria-current="page"] { color: var(--color-text); border-bottom-color: var(--color-medium); }
+
+/* Header collapse. Queries the header itself, so the embedded phone preview
+   reflows without duplicating rules. */
+@container (max-width: 48rem) {
+  .site-header__inner { padding-block: var(--space-3); gap: var(--space-3); }
+  .brand img { width: 58px; }
+  .brand__name { display: none; }
+  .nav { gap: var(--space-4); }
+  .nav a { font-size: var(--text-sm); }
+}
+
+/* ---------- Page head ---------- */
+.page-head { padding-block: clamp(2rem, 5vw, 4rem) var(--space-6); max-width: 62ch; }
+.step {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  margin-bottom: var(--space-4);
+  text-align: left;
+}
+.lead { margin-top: var(--space-4); font-size: var(--text-read); color: var(--color-text-soft); max-width: 58ch; }
+
+/* ---------- Cards and surfaces ---------- */
+.card { background: var(--color-card); border-radius: var(--radius-lg); padding: var(--space-5); }
+.card--flush { padding: 0; overflow: hidden; }
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.card-head h2 { font-size: var(--text-xl); }
+.card-note { font-size: var(--text-sm); color: var(--color-text-soft); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  padding: 0.6875rem 1.125rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.btn--primary { background: var(--color-text); color: var(--color-bg); }
+.btn--primary:hover { background: #f3f7f8; }
+.btn--ghost { border-color: var(--color-line); color: var(--color-text); }
+.btn--ghost:hover { border-color: var(--color-muted); }
+.btn--quiet { color: var(--color-text-soft); padding-inline: 0.5rem; }
+.btn--quiet:hover { color: var(--color-text); }
+.btn--sm { font-size: var(--text-sm); padding: 0.5rem 0.75rem; }
+.btn svg { flex: 0 0 auto; }
+
+/* ---------- Fields ---------- */
+.field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.field > label { font-size: var(--text-sm); color: var(--color-text-soft); }
+.field__help { font-size: var(--text-xs); color: var(--color-text-soft); }
+.input {
+  font: inherit;
+  font-size: var(--text-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 0.5625rem 0.75rem;
+  min-width: 0;
+  transition: border-color var(--duration) var(--ease);
+}
+.input::placeholder { color: var(--color-text-soft); opacity: 0.72; }
+.input:focus { border-color: var(--color-medium); }
+/* The rectangle is the search box, not the input: the frame, the radius and the
+   focus ring live on the wrapper so the magnifier can sit inside it, on the
+   right, where the eye goes after typing. Sized from the flex row, not from vw,
+   so it also fits the 390 px column inside the embedded phone preview. */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 22rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding-right: var(--space-3);
+  transition: border-color var(--duration) var(--ease);
+}
+.search:focus-within { border-color: var(--color-medium); }
+.search .input { flex: 1 1 12rem; width: auto; min-width: 0; background: transparent; border: 0; padding-right: 0; }
+.search .input:focus { border-color: transparent; }
+.search__icon { color: var(--color-text-soft); display: flex; flex: 0 0 auto; }
+
+/* ---------- Criticality ---------- */
+.level { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
+.level::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--dot, var(--color-low));
+  flex: 0 0 auto;
+}
+[data-level="critical"] { --dot: var(--color-critical); }
+[data-level="high"] { --dot: var(--color-high); }
+[data-level="medium"] { --dot: var(--color-medium); }
+[data-level="low"] { --dot: var(--color-low); }
+
+/* ---------- Carga: workspace ---------- */
+.workspace {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: start;
+}
+@container (max-width: 62rem) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+}
+
+.drop {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3rem) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  outline: 1px dashed var(--color-line);
+  outline-offset: -1px;
+}
+.drop__icon { color: var(--color-muted); }
+.drop h3 { font-family: var(--font-heading); font-size: var(--text-lg); }
+.drop__hint { font-size: var(--text-sm); color: var(--color-text-soft); max-width: 34ch; }
+.drop__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; }
+.drop--empty { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-line);
+}
+.file-row__meta { display: grid; gap: var(--space-1); min-width: 0; }
+.file-row__name { font-size: var(--text-md); font-weight: var(--weight-medium); word-break: break-all; }
+.file-row__sub { font-size: var(--text-sm); color: var(--color-text-soft); }
+.file-row__actions { display: flex; gap: var(--space-2); margin-left: auto; flex-wrap: wrap; }
+
+/* ---------- Carga: quality ---------- */
+.summary-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+.summary-list > div { display: grid; gap: var(--space-1); }
+.summary-list dt { font-size: var(--text-sm); color: var(--color-text-soft); }
+.summary-list dd { margin: 0; font-size: var(--text-md); font-variant-numeric: tabular-nums; }
+.summary-list dd.strong { font-family: var(--font-heading); font-size: var(--text-xl); font-weight: var(--weight-semibold); line-height: 1.1; }
+.quality { display: grid; gap: var(--space-4); margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--color-line); }
+.quality__item { display: grid; gap: var(--space-2); }
+.quality__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.quality__head h4 { font-size: var(--text-md); font-family: var(--font-body); font-weight: var(--weight-medium); letter-spacing: 0; }
+.quality__count { font-size: var(--text-sm); color: var(--color-text-soft); font-variant-numeric: tabular-nums; }
+.quality__body { font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.6; }
+.quality__pairs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 0.1875rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.chip b { font-weight: var(--weight-medium); color: var(--color-text); }
+.chip span { color: var(--color-text-soft); }
+
+/* ---------- Events table ---------- */
+.events-section { margin-top: var(--space-6); background: var(--color-card); border-radius: var(--radius-lg); }
+.events-section__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  padding: var(--space-5);
+  padding-bottom: var(--space-4);
+}
+.events-section__head h2 { font-size: var(--text-xl); }
+.events-section__note { font-size: var(--text-sm); color: var(--color-text-soft); margin-top: var(--space-2); max-width: 46ch; }
+.toolbar { display: flex; align-items: end; gap: var(--space-3); flex-wrap: wrap; min-width: 0; }
+/* The sideways slide of the event table is part of the design, not a browser
+   overlay: tablet and phone both show the bar, so nobody has to guess that the
+   columns continue past the edge. */
+.table-wrap {
+  overflow-x: auto;
+}
+.table-wrap::-webkit-scrollbar { height: 10px; }
+.table-wrap::-webkit-scrollbar-track { background: var(--color-surface); border-radius: var(--radius-full); }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--color-muted); border-radius: var(--radius-full); }
+.table-wrap::-webkit-scrollbar-thumb:hover { background: var(--color-text-soft); }
+table.events { width: 100%; border-collapse: collapse; font-size: var(--text-md); }
+.events th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-soft);
+  white-space: nowrap;
+  vertical-align: bottom;
+  border-bottom: 1px solid var(--color-line);
+}
+.events th button {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.events th button:hover { color: var(--color-text); }
+.events th svg { color: var(--color-muted); }
+.events th[aria-sort] svg { color: var(--color-text); }
+.events td {
+  padding: 0.6875rem var(--space-4);
+  border-top: 1px solid var(--color-line);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+.events tbody tr:first-child td { border-top: 0; }
+.events tbody tr:hover { background: rgba(228, 235, 237, 0.03); }
+
+/* First column pinned while the table scrolls sideways on narrow screens. */
+.events th:first-child, .events td:first-child { position: sticky; left: 0; background: var(--color-card); z-index: 1; }
+.events .cell-id { color: var(--color-text-soft); font-size: var(--text-sm); }
+.events .cell-void { color: var(--color-muted); }
+.events .cell-mono { font-size: var(--text-sm); }
+.events-section__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-line);
+}
+/* Wraps instead of running past the card: the paginator shares its row with the
+   row count, and inside the phone preview the gutter still resolves against the
+   real viewport, so the last arrow used to end up outside the rectangle. */
+.pager { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; min-width: 0; }
+.pager__btn {
+  font: inherit;
+  flex: 0 0 auto;
+  font-size: var(--text-sm);
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding-inline: 0.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.pager__btn:hover { border-color: var(--color-muted); }
+.pager__btn[aria-current="page"] { background: var(--color-surface); border-color: var(--color-muted); }
+.pager__btn[disabled] { color: var(--color-muted); cursor: not-allowed; }
+.pager__ellipsis { color: var(--color-text-soft); padding-inline: var(--space-1); }
+
+/* ---------- States: loading skeleton ---------- */
+.skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: rgba(228, 235, 237, 0.06);
+  animation: pulse 1.6s var(--ease) infinite;
+}
+.skeleton--line { height: 0.75rem; }
+.skeleton--sm { width: 40%; }
+.skeleton--md { width: 68%; }
+.progress { height: 0.375rem; border-radius: var(--radius-full); background: var(--color-line); overflow: hidden; }
+.progress__bar { height: 100%; width: 62%; background: var(--color-medium); border-radius: inherit; animation: slide 2.4s var(--ease) infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes slide { 0% { transform: translateX(-25%); } 100% { transform: translateX(105%); } }
+
+.status { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-md); }
+.status svg { color: var(--color-text-soft); flex: 0 0 auto; }
+.spinner {
+  width: 1rem; height: 1rem; border-radius: 50%;
+  border: 2px solid var(--color-line); border-top-color: var(--color-medium);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- States: empty and error ---------- */
+.empty-panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.empty-panel h3 { font-size: var(--text-lg); }
+.steps-list { display: grid; gap: var(--space-3); list-style: none; counter-reset: step; }
+.steps-list li {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  line-height: 1.6;
+}
+.steps-list li::before {
+  counter-increment: step;
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 1.5rem; height: 1.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+.steps-list b { color: var(--color-text); font-weight: var(--weight-medium); }
+
+.alert {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.alert__head { display: flex; align-items: center; gap: var(--space-3); }
+.alert__head svg { color: var(--color-critical); flex: 0 0 auto; }
+.alert h3 { font-size: var(--text-lg); }
+.alert__detail {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  background: var(--color-card);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-variant-numeric: tabular-nums;
+}
+.alert__actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+/* ---------- Documentation bands ---------- */
+.doc {
+  margin-top: var(--space-9);
+  border-top: 1px solid var(--color-line);
+  padding-block: var(--space-7) var(--space-8);
+}
+.doc__inner { width: min(var(--shell), 100% - 2 * var(--gutter)); margin-inline: auto; }
+.doc__head { display: grid; gap: var(--space-3); max-width: 62ch; margin-bottom: var(--space-6); }
+.doc__head h2 { font-size: var(--text-2xl); }
+.doc__note { color: var(--color-text-soft); font-size: var(--text-md); }
+.doc__stack { display: grid; gap: var(--space-7); }
+.frame-block { display: grid; gap: var(--space-3); }
+.frame-block__caption { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+.frame-block__caption h3 { font-size: var(--text-lg); }
+.frame-block__caption p { font-size: var(--text-sm); color: var(--color-text-soft); }
+/* State frames repeat a screen inside this document: the screen title is set as
+   text so the page keeps a single h1 and the frame captions keep their level. */
+.frame-title { margin: 0; font-family: var(--font-heading); font-size: var(--text-2xl); font-weight: var(--weight-semibold); line-height: var(--leading-tight); letter-spacing: -0.02em; }
+
+.frame {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  outline: 1px solid var(--color-line);
+  overflow: hidden;
+}
+.frame__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-soft);
+  font-variant-numeric: tabular-nums;
+}
+.device { display: grid; gap: var(--space-6); }
+.device__slot { display: grid; gap: var(--space-3); }
+.device__frame { width: 100%; }
+.device__screen { overflow: hidden; }
+.device__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.device__head h3 { font-size: var(--text-lg); }
+
+/* ---------- Footer ---------- */
+.site-footer { margin-top: var(--space-8); padding-bottom: var(--space-7); }
+.site-footer__inner {
+  width: min(var(--shell), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+  flex-wrap: wrap;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-line);
+}
+.byline { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+.byline__name { font-family: var(--font-heading); font-weight: var(--weight-medium); font-size: var(--text-md); }
+.byline__role { font-size: var(--text-sm); color: var(--color-text-soft); }
+.footer-id { display: grid; gap: var(--space-1); }
+.footer-note { font-size: var(--text-sm); color: var(--color-text-soft); }
+.footer-links { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+.footer-links a { color: var(--color-text-soft); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: var(--space-2); border-radius: var(--radius-sm); transition: color var(--duration) var(--ease), background var(--duration) var(--ease); }
+.footer-links a:hover { color: var(--color-text); background: var(--color-surface); }
+.footer-links a:focus-visible { outline: 2px solid var(--color-medium); outline-offset: 2px; }
+.footer-links svg { display: block; width: 18px; height: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="cargar.html">
+        <img src="data:image/png;base64,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" alt="Nhera" width="280" height="145">
+        <span class="brand__name">Análisis SOC 2</span>
+      </a>
+      <nav class="nav" aria-label="Pantallas">
+        <a href="cargar.html" aria-current="page">Cargar</a>
+        <a href="analisis.html">Análisis</a>
+        <a href="informe.html">Informe</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="page">
+
+      <div class="page-head">
+        <p class="step">Paso 1 de 3</p>
+        <h1>Carga y revisión del export</h1>
+        <p class="lead">Arrastra el archivo .xlsx exportado del SIEM. La interfaz valida el contenido, muestra qué problemas trae el archivo y deja los eventos listos para analizar.</p>
+      </div>
+
+      <div class="workspace">
+
+        <section class="card" aria-labelledby="carga-title">
+          <div class="card-head">
+            <h2 id="carga-title">Carga del export</h2>
+            <span class="card-note">.xlsx</span>
+          </div>
+
+          <div class="drop">
+            <span class="drop__icon" aria-hidden="true">
+              <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><rect x="6" y="3" width="17" height="23" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M23 8.5 28 13v17.5a2.5 2.5 0 0 1-2.5 2.5H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14.5 11v9m0-9-3 3m3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Arrastra el archivo del cliente</h3>
+            <p class="drop__hint">Un archivo por análisis. También puedes elegirlo desde el disco.</p>
+            <div class="drop__actions">
+              <label class="btn btn--primary" for="file">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 11V2m0 0L4.5 5.5M8 2l3.5 3.5M2.5 11v1.5A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Elegir archivo
+              </label>
+              <input class="visually-hidden" id="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </div>
+          </div>
+
+          <div class="file-row">
+            <div class="file-row__meta">
+              <p class="file-row__name">SOC_L2_Logs_Ampliados_Multiples_Incidentes.xlsx</p>
+              <p class="file-row__sub">715 filas · 12 columnas · 23/10/2026 07:46 a 13:44</p>
+            </div>
+            <div class="file-row__actions">
+              <button class="btn btn--ghost btn--sm" type="button">Reemplazar</button>
+              <a class="btn btn--quiet btn--sm" href="analisis.html">Analizar</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="quality-title">
+          <div class="card-head">
+            <h2 id="quality-title">Resumen de la carga</h2>
+            <span class="card-note">Medido sobre el archivo</span>
+          </div>
+
+          <dl class="summary-list">
+            <div>
+              <dt>Filas</dt>
+              <dd class="strong num">715</dd>
+            </div>
+            <div>
+              <dt>Columnas</dt>
+              <dd class="strong num">12</dd>
+            </div>
+            <div>
+              <dt>Ventana analizada</dt>
+              <dd class="num">5 h 58 min</dd>
+            </div>
+            <div>
+              <dt>Filas sin marca de tiempo</dt>
+              <dd class="num">0</dd>
+            </div>
+          </dl>
+
+          <div class="quality">
+            <h3>Calidad de datos</h3>
+
+            <div class="quality__item">
+              <div class="quality__head">
+                <h4>Valores nulos por columna</h4>
+                <span class="quality__count">2 columnas</span>
+              </div>
+              <div class="quality__pairs">
+                <span class="chip"><b>Process_CommandLine</b><span>560</span></span>
+                <span class="chip"><b>Destination</b><span>262</span></span>
+              </div>
+              <p class="quality__body">Las otras diez columnas no tienen celdas vacías.</p>
+            </div>
+
+            <div class="quality__item">
+              <div class="quality__head">
+                <h4>Equipos con escritura duplicada</h4>
+                <span class="quality__count">121 filas</span>
+              </div>
+              <div class="quality__pairs">
+                <span class="chip"><b>DC01</b><span>DC-01 · 91</span></span>
+                <span class="chip"><b>DC01</b><span>DC01 · 30</span></span>
+              </div>
+              <p class="quality__body">Las dos formas se unifican en DC01 antes de analizar.</p>
+            </div>
+
+            <div class="quality__item">
+              <div class="quality__head">
+                <h4>Tipos de Event_ID</h4>
+                <span class="quality__count">Mezcla de tipos</span>
+              </div>
+              <div class="quality__pairs">
+                <span class="chip"><b>672</b><span>numéricos</span></span>
+                <span class="chip"><b>PROXY_ACCESS</b><span>22</span></span>
+                <span class="chip"><b>HTTP_ACCESS</b><span>21</span></span>
+              </div>
+              <p class="quality__body">El identificador mezcla números y texto. Se conserva como texto para no perder ninguna fila.</p>
+            </div>
+
+            <div class="quality__item">
+              <div class="quality__head">
+                <h4>Marcas de tiempo ilegibles</h4>
+                <span class="quality__count">0 filas</span>
+              </div>
+              <p class="quality__body">Las 715 marcas de tiempo se leyeron con el formato del export.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="events-section" aria-labelledby="events-title">
+        <div class="events-section__head">
+          <div>
+            <h2 id="events-title">Eventos del export</h2>
+            <p class="events-section__note">Las filas llegan tal como están en el archivo. La tabla no recalcula nada: muestra lo que devuelve la API. En tableta y móvil se desliza de izquierda a derecha con la primera columna fija.</p>
+          </div>
+          <div class="toolbar">
+            <div class="field">
+              <label for="q">Buscar en la tabla</label>
+              <div class="search">
+                <input class="input" id="q" type="search" placeholder="Log_ID, equipo o IP" aria-describedby="q-help">
+                <span class="search__icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
+              </div>
+              <span class="field__help" id="q-help">La tabla se filtra mientras escribes.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="events">
+            <caption class="visually-hidden">Eventos del archivo cargado, ordenados por marca de tiempo ascendente.</caption>
+            <thead>
+              <tr>
+                <th scope="col" aria-sort="none"><button type="button">Log_ID<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 1.5v7M2 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+                <th scope="col" aria-sort="ascending"><button type="button">Marca de tiempo<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 8.5v-7M2 4.5l3-3 3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+                <th scope="col" aria-sort="none"><button type="button">Equipo<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 1.5v7M2 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+                <th scope="col" aria-sort="none"><button type="button">Evento<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 1.5v7M2 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+                <th scope="col" aria-sort="none"><button type="button">Cuenta<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 1.5v7M2 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+                <th scope="col" aria-sort="none"><button type="button">Origen<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 1.5v7M2 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+                <th scope="col" aria-sort="none"><button type="button">Destino<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 1.5v7M2 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+                <th scope="col" aria-sort="none"><button type="button">Resultado<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 1.5v7M2 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-id">EVT-00001</td>
+                <td class="num">23/10 · 07:46:07</td>
+                <td>WS-018</td>
+                <td class="num">7036</td>
+                <td>CORP\helpdesk</td>
+                <td class="cell-mono">10.10.3.18</td>
+                <td>DC-01</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00002</td>
+                <td class="num">23/10 · 07:46:08</td>
+                <td>WEB-01</td>
+                <td class="num">4625</td>
+                <td>CORP\jlopez</td>
+                <td class="cell-mono">10.10.1.22</td>
+                <td>FS-SRV01</td>
+                <td>Failure</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00003</td>
+                <td class="num">23/10 · 07:47:29</td>
+                <td>DB-SRV01</td>
+                <td class="num">4688</td>
+                <td>CORP\jlopez</td>
+                <td class="cell-mono">10.10.1.22</td>
+                <td>DC-01</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00004</td>
+                <td class="num">23/10 · 07:47:37</td>
+                <td>WEB-01</td>
+                <td class="num">4634</td>
+                <td>CORP\dtorres</td>
+                <td class="cell-mono">10.10.1.44</td>
+                <td>DC-01</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00005</td>
+                <td class="num">23/10 · 07:48:11</td>
+                <td>DC-01</td>
+                <td class="num">4625</td>
+                <td>CORP\slopez</td>
+                <td class="cell-mono">10.10.2.24</td>
+                <td>FS-SRV01</td>
+                <td>Failure</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00006</td>
+                <td class="num">23/10 · 07:48:42</td>
+                <td>WS-014</td>
+                <td class="num">4624</td>
+                <td>CORP\mgarcia</td>
+                <td class="cell-mono">10.10.3.18</td>
+                <td>APP-SRV01</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00007</td>
+                <td class="num">23/10 · 07:50:27</td>
+                <td>WS-018</td>
+                <td class="num">7036</td>
+                <td>CORP\rrojas</td>
+                <td class="cell-mono">10.10.3.18</td>
+                <td class="cell-void">Sin destino</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00008</td>
+                <td class="num">23/10 · 07:51:51</td>
+                <td>WS-031</td>
+                <td class="num">4663</td>
+                <td>CORP\rrojas</td>
+                <td class="cell-mono">10.10.1.44</td>
+                <td>APP-SRV01</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00009</td>
+                <td class="num">23/10 · 07:52:19</td>
+                <td>FS-SRV01</td>
+                <td class="num">5156</td>
+                <td>CORP\rrojas</td>
+                <td class="cell-mono">10.10.1.44</td>
+                <td>APP-SRV01</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00010</td>
+                <td class="num">23/10 · 07:53:36</td>
+                <td>WS-023</td>
+                <td class="num">4625</td>
+                <td>CORP\helpdesk</td>
+                <td class="cell-mono">10.10.2.15</td>
+                <td class="cell-void">Sin destino</td>
+                <td>Failure</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00011</td>
+                <td class="num">23/10 · 07:53:42</td>
+                <td>WS-031</td>
+                <td class="num">4663</td>
+                <td>CORP\slopez</td>
+                <td class="cell-mono">10.10.2.15</td>
+                <td>APP-SRV01</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td class="cell-id">EVT-00012</td>
+                <td class="num">23/10 · 07:53:57</td>
+                <td>WS-014</td>
+                <td class="num">4663</td>
+                <td>CORP\jlopez</td>
+                <td class="cell-mono">10.10.2.15</td>
+                <td class="cell-void">Sin destino</td>
+                <td>Success</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="events-section__foot">
+          <p class="card-note num">Filas 1 a 12 de 715</p>
+          <nav class="pager" aria-label="Paginación de eventos">
+            <button class="pager__btn" type="button" disabled aria-label="Página anterior">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="pager__btn" type="button" aria-current="page">1</button>
+            <button class="pager__btn" type="button">2</button>
+            <button class="pager__btn" type="button">3</button>
+            <span class="pager__ellipsis" aria-hidden="true">…</span>
+            <button class="pager__btn" type="button">60</button>
+            <button class="pager__btn" type="button" aria-label="Página siguiente">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5 8 6l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </nav>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div class="footer-id">
+        <div class="byline">
+          <span class="byline__name">Karen Gil</span>
+          <span class="byline__role">Analista SOC 2</span>
+        </div>
+        <p class="footer-note">Proyecto final DOJO-WoSEC</p>
+      </div>
+      <nav class="footer-links" aria-label="Perfiles de Karen Gil">
+        <a href="https://github.com/nheradevs" aria-label="GitHub de Karen Gil" title="GitHub">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.22.48-2.69-1.07-2.69-1.07-.36-.92-.89-1.17-.89-1.17-.72-.5.06-.49.06-.49.8.06 1.22.83 1.22.83.71 1.22 1.87.87 2.32.66.07-.52.28-.87.5-1.07-1.77-.2-3.63-.89-3.63-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.28.82 2.15 0 3.07-1.86 3.75-3.64 3.94.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/in/karen-gil-g" aria-label="LinkedIn de Karen Gil" title="LinkedIn">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3.4 5.6H1V15h2.4V5.6ZM2.2 1a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8ZM15 9.6c0-2.6-1.4-3.8-3.3-3.8-1.5 0-2.2.8-2.6 1.4V5.6H6.7V15h2.4V9.9c0-1.1.5-1.8 1.5-1.8s1.4.7 1.4 1.8V15H15V9.6Z"/></svg>
+        </a>
+      </nav>
+    </div>
+  </footer>
+</div>
+
+<!-- ---------- Documentation: states ---------- -->
+<section class="doc" aria-labelledby="states-title">
+  <div class="doc__inner">
+    <div class="doc__head">
+      <h2 id="states-title">Estados de la pantalla</h2>
+      <p class="doc__note">Los tres estados sin datos usan la misma estructura que el estado lleno, así que la página no salta cuando cambia el contenido. El estado vacío ocupa el mismo alto que el lleno a propósito.</p>
+    </div>
+
+    <div class="doc__stack">
+
+      <div class="frame-block">
+        <div class="frame-block__caption">
+          <h3>Vacío</h3>
+          <p>Primera visita. La zona de carga es la única acción posible.</p>
+        </div>
+        <div class="frame">
+          <div style="padding: clamp(1.5rem, 4vw, 2.5rem); container-type: inline-size;">
+            <div class="page-head" style="padding-block: 0 var(--space-5);">
+              <p class="step">Paso 1 de 3</p>
+              <p class="frame-title">Carga y revisión del export</p>
+              <p class="lead">Arrastra el archivo .xlsx exportado del SIEM. La interfaz valida el contenido, muestra qué problemas trae el archivo y deja los eventos listos para analizar.</p>
+            </div>
+            <div class="workspace">
+              <section class="card">
+                <div class="card-head"><h2>Carga del export</h2><span class="card-note">.xlsx</span></div>
+                <div class="drop drop--empty">
+                  <span class="drop__icon" aria-hidden="true">
+                    <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><rect x="6" y="3" width="17" height="23" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3"/><path d="M23 8.5 28 13v17.5a2.5 2.5 0 0 1-2.5 2.5H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </span>
+                  <h3>Todavía no hay ningún archivo</h3>
+                  <p class="drop__hint">Arrastra el export del cliente o elígelo desde el disco. El archivo no sale de este equipo hasta que pidas el análisis.</p>
+                  <div class="drop__actions">
+                    <label class="btn btn--primary">Elegir archivo</label>
+                    <button class="btn btn--ghost" type="button">Ver formato esperado</button>
+                  </div>
+                </div>
+              </section>
+              <section class="card">
+                <div class="empty-panel">
+                  <h3>Qué vas a ver cuando cargues el archivo</h3>
+                  <ol class="steps-list">
+                    <li><span><b>Resumen.</b> Filas, columnas y ventana de tiempo del export.</span></li>
+                    <li><span><b>Calidad de datos.</b> Nulos, equipos escritos de dos formas y tipos mezclados en Event_ID.</span></li>
+                    <li><span><b>Tabla de eventos.</b> Las filas tal como llegan, con búsqueda y ordenamiento.</span></li>
+                  </ol>
+                </div>
+              </section>
+            </div>
+            <section class="events-section">
+              <div class="events-section__head">
+                <div>
+                  <h2>Eventos del export</h2>
+                  <p class="events-section__note">La tabla se llena cuando cargas un archivo.</p>
+                </div>
+              </div>
+              <div style="padding: 0 var(--space-5) var(--space-6);">
+                <div class="empty-panel" style="justify-items: center; text-align: center;">
+                  <p class="card-note">Sin eventos para mostrar.</p>
+                  <a class="btn btn--ghost btn--sm" href="#app">Volver a la carga</a>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <div class="frame-block">
+        <div class="frame-block__caption">
+          <h3>Cargando</h3>
+          <p>Validación del archivo. El botón se deshabilita y el progreso nombra la etapa en curso.</p>
+        </div>
+        <div class="frame">
+          <div style="padding: clamp(1.5rem, 4vw, 2.5rem); container-type: inline-size;">
+            <div class="workspace">
+              <section class="card">
+                <div class="card-head"><h2>Carga del export</h2><span class="card-note">Leyendo el archivo</span></div>
+                <div class="empty-panel">
+                  <div class="status">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span>Validando SOC_L2_Logs_Ampliados_Multiples_Incidentes.xlsx</span>
+                  </div>
+                  <div class="progress" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso de la validación">
+                    <div class="progress__bar" style="width: 62%;"></div>
+                  </div>
+                  <p class="card-note num" style="margin-top: -0.25rem;">62 % · 440 de 715 filas</p>
+                  <ol class="steps-list">
+                    <li><span><b>Archivo leído.</b> 12 columnas detectadas.</span></li>
+                    <li><span><b>Normalizando.</b> Equipos, identificadores de evento y marcas de tiempo.</span></li>
+                    <li><span style="color: var(--color-muted);">Revisión de calidad pendiente.</span></li>
+                  </ol>
+                </div>
+              </section>
+              <section class="card">
+                <div class="card-head"><h2>Resumen de la carga</h2></div>
+                <div style="display: grid; gap: var(--space-3);">
+                  <span class="skeleton skeleton--line skeleton--sm"></span>
+                  <span class="skeleton skeleton--line skeleton--md" style="height: 1.75rem;"></span>
+                  <span class="skeleton skeleton--line skeleton--md"></span>
+                  <span class="skeleton skeleton--line skeleton--sm"></span>
+                  <span class="skeleton skeleton--line" style="width: 86%;"></span>
+                  <span class="skeleton skeleton--line" style="width: 52%;"></span>
+                </div>
+              </section>
+            </div>
+            <section class="events-section">
+              <div class="events-section__head">
+                <div>
+                  <h2>Eventos del export</h2>
+                  <p class="events-section__note">La tabla aparece cuando termina la validación.</p>
+                </div>
+              </div>
+              <div style="display: grid; gap: var(--space-3); padding: 0 var(--space-5) var(--space-6);">
+                <span class="skeleton skeleton--line" style="height: 0.625rem;"></span>
+                <span class="skeleton skeleton--line"></span>
+                <span class="skeleton skeleton--line" style="width: 92%;"></span>
+                <span class="skeleton skeleton--line" style="width: 96%;"></span>
+                <span class="skeleton skeleton--line" style="width: 88%;"></span>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <div class="frame-block">
+        <div class="frame-block__caption">
+          <h3>Error</h3>
+          <p>El mensaje dice qué pasó y qué hacer. El detalle técnico queda en una línea aparte.</p>
+        </div>
+        <div class="frame">
+          <div style="padding: clamp(1.5rem, 4vw, 2.5rem); container-type: inline-size;">
+            <div class="workspace">
+              <section class="card">
+                <div class="card-head"><h2>Carga del export</h2></div>
+                <div class="alert" role="alert">
+                  <div class="alert__head">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="13.75" r="0.9" fill="currentColor"/></svg>
+                    <h3>No se pudo leer el archivo</h3>
+                  </div>
+                  <p class="quality__body">Revisa que sea un .xlsx exportado del SIEM y que el archivo no esté abierto en otra aplicación. Después vuelve a intentarlo.</p>
+                  <p class="alert__detail">Detalle: 400 · el archivo no contiene filas de eventos.</p>
+                  <div class="alert__actions">
+                    <button class="btn btn--primary btn--sm" type="button">Volver a intentar</button>
+                    <button class="btn btn--ghost btn--sm" type="button">Elegir otro archivo</button>
+                  </div>
+                </div>
+              </section>
+              <section class="card">
+                <div class="card-head"><h2>Resumen de la carga</h2></div>
+                <div class="empty-panel">
+                  <p class="quality__body">Sin resumen. El archivo no pasó la validación, así que no hay filas, columnas ni calidad que informar.</p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Documentation: adaptation ---------- -->
+<section class="doc" aria-labelledby="adapt-title">
+  <div class="doc__inner">
+    <div class="doc__head">
+      <h2 id="adapt-title">Tableta y móvil</h2>
+      <p class="doc__note">Las dos vistas de abajo son el mismo marcado de la pantalla, sin copias: el marco mide 832 px y 390 px y las reglas de contenedor reordenan el contenido. Reglas: dos columnas hasta 992 px, una columna después. La tabla se desliza en horizontal con la barra a la vista y la primera columna fija; el paginador envuelve en varias líneas antes que salirse de la tarjeta.</p>
+    </div>
+    <div class="device">
+      <div class="device__slot">
+        <div class="device__head">
+          <h3>Tableta</h3>
+          <span class="frame__label">832 × sin alto fijo</span>
+        </div>
+        <div class="frame device__frame" data-clone data-width="832"></div>
+      </div>
+      <div class="device__slot">
+        <div class="device__head">
+          <h3>Móvil</h3>
+          <span class="frame__label">390 × sin alto fijo</span>
+        </div>
+        <div class="frame device__frame" data-clone data-width="390"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Header: opaque at rest, slightly translucent once the page scrolls.
+  const header = document.querySelector('.site-header');
+  const setStuck = () => header.classList.toggle('is-stuck', window.scrollY > 8);
+  setStuck();
+  window.addEventListener('scroll', setStuck, { passive: true });
+
+  // Device previews clone the real screen, so the responsive rules are proven on
+  // the shipped markup instead of a second copy of it.
+  const source = document.getElementById('app');
+  for (const slot of document.querySelectorAll('[data-clone]')) {
+    const width = slot.dataset.width;
+    const clone = source.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+    clone.querySelectorAll('[for]').forEach((el) => el.removeAttribute('for'));
+    slot.style.maxWidth = width + 'px';
+    slot.style.width = '100%';
+    slot.setAttribute('inert', '');
+    slot.setAttribute('aria-hidden', 'true');
+    slot.appendChild(clone);
+  }
+</script>
+</body>
+</html>

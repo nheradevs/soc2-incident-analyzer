@@ -1,0 +1,27 @@
+{
+  "title": "Análisis SOC 2 · rediseño de interfaz",
+  "brief": "Rediseño visual de una aplicación web existente en Angular 20 que analiza un export de SIEM, clasifica el riesgo y genera un informe ejecutivo y técnico exportable a PDF. Tres pantallas: carga con calidad de datos y tabla de eventos, dashboard de riesgo con incidentes y evidencia, e informe en dos versiones. Interfaz oscura, paleta de seis colores, Poppins en títulos, texto en español neutro con tratamiento de tú.",
+  "artboards": [
+    {
+      "file": "cargar.html",
+      "title": "Cargar · export, calidad de datos y tabla de eventos",
+      "tradeoff": "Muestra el archivo ya cargado como estado principal, porque el valor de la pantalla es la revisión de calidad. La tabla se desliza en horizontal con la barra a la vista y el paginador envuelve antes que salirse de la tarjeta.",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "analisis.html",
+      "title": "Análisis · riesgo, incidentes y evidencia",
+      "tradeoff": "Prioriza lista y detalle de incidentes sobre los gráficos: el analista necesita explicar qué pasó antes de mirar el volumen. Los gráficos quedan debajo como contexto.",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "informe.html",
+      "title": "Informe · dos versiones, estado de redacción y PDF",
+      "tradeoff": "Una versión por vez: el selector decide qué texto se lee y la descarga sigue a esa versión, así nunca queda la duda de qué PDF se baja. El costo es que la otra versión pide un clic.",
+      "width": 1440,
+      "height": 900
+    }
+  ]
+}
