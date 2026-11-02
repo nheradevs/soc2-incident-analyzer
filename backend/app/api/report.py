@@ -2,7 +2,8 @@
 
 `POST /api/report` reads the session's cached analysis, turns it into the closed
 brief and composes the report. `GET /api/report/pdf` renders that same payload
-as a PDF on the server. Both are synchronous because the provider client is
+as a PDF on the server, whole or as the single version the `version` query
+parameter asks for. Both are synchronous because the provider client is
 synchronous; FastAPI runs them in the thread pool. Every user-facing string is
 Spanish; identifiers stay English.
 """
@@ -11,7 +12,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.api.analysis import Analysis
 from app.api.ratelimit import PDF_BUCKET, REPORT_BUCKET, rate_limited
@@ -22,10 +23,19 @@ from app.export import pdf_filename, render_pdf
 from app.reporting.brief import build_brief
 from app.reporting.compose import compose_report
 from app.reporting.narrative import NarrativeClient
+from app.reporting.templates import VERSIONS
 
 router = APIRouter()
 
 PDF_MEDIA_TYPE = "application/pdf"
+UNKNOWN_VERSION_MESSAGE = "Versión de informe no válida: usa «ejecutiva» o «tecnica»."
+
+
+def requested_version(version: str | None) -> str | None:
+    """The version asked for, or a 400 naming the two accepted values."""
+    if version is None or version in VERSIONS:
+        return version
+    raise HTTPException(status_code=400, detail=UNKNOWN_VERSION_MESSAGE)
 
 
 def get_narrative_client(
@@ -76,19 +86,26 @@ def generate_report(
 )
 def export_report_pdf(
     client: Annotated[NarrativeClient, Depends(get_narrative_client)],
+    version: str | None = None,
 ) -> Response:
     """Download the report as a PDF generated on the server (RF6).
 
-    The file is built from the composed report only: the cover carries the
-    counts and the classification of the analysis, and the two versions keep
-    their nine sections. Raises the same 409 as `POST /api/report` before any
-    upload, and never includes the provider key, the prompt or the completion.
+    With `?version=ejecutiva` or `?version=tecnica` the file carries only that
+    version: cover, contents and its nine sections. Without the parameter it
+    still carries both, so existing links keep working. An unknown value is a
+    400 in Spanish rather than a validation error. The file is built from the
+    composed report only: the cover carries the counts and the classification of
+    the analysis. Raises the same 409 as `POST /api/report` before any upload,
+    and never includes the provider key, the prompt or the completion.
     """
+    selected = requested_version(version)
     report = composed_report(current_analysis(), client)
     return Response(
-        content=render_pdf(report),
+        content=render_pdf(report, version=selected),
         media_type=PDF_MEDIA_TYPE,
         headers={
-            "Content-Disposition": f'attachment; filename="{pdf_filename(report)}"',
+            "Content-Disposition": (
+                f'attachment; filename="{pdf_filename(report, selected)}"'
+            ),
         },
     )

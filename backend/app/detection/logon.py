@@ -1,8 +1,8 @@
 """D2: suspicious successful logons.
 
 Two signals are available in this export: a `4624` whose source is an external IP
-and a `4624` on an administrative account. The third signal of the design —
-"logon outside business hours" — is **not detectable here**: the workbook has no
+and a `4624` on an administrative account. The third signal of the design
+("logon outside business hours") is **not detectable here**: the workbook has no
 business-hour baseline and a single 6-hour window of one day, so any hour rule
 would be invented. It is declared as a limitation instead of faked (FSD §7.4).
 """

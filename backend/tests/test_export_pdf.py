@@ -3,9 +3,10 @@
 The document is generated with ReportLab from the composed report payload, so it
 contains real text: both Spanish versions, the same counts the dashboard shows
 and the `Log_ID`s of the technical evidence. These tests read the bytes back
-with `pypdf` and pin what the export promises — a valid PDF, both versions with
-their nine sections, accents that survive extraction, a safe dated attachment
-filename, a 409 before any upload and no provider secret anywhere in the file.
+with `pypdf` and pin what the export promises: a valid PDF, both versions with
+their nine sections, one version at a time when `?version=` asks for it, accents
+that survive extraction, a safe dated attachment filename, a 400 for an unknown
+version, a 409 before any upload and no provider secret anywhere in the file.
 
 The provider is never called: every case overrides the narrative client.
 """
@@ -29,6 +30,7 @@ from app.api.session import session_store
 from app.config import Settings, get_settings
 from app.main import app
 from app.reporting.narrative import NarrativeClient
+from app.reporting.templates import SECTION_TITLES
 
 EXPORT = Path(__file__).resolve().parents[2] / "SOC_L2_Logs_Ampliados_Multiples_Incidentes.xlsx"
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -46,6 +48,10 @@ PDF_MEDIA_TYPE = "application/pdf"
 MIN_PAGES = 5
 MAX_DEMO_BYTES = 1_000_000
 ATTACHMENT_RE = re.compile(r'^attachment; filename="(?P<name>[^"]+)"$')
+VERSION_HEADINGS = {"ejecutiva": "Versión ejecutiva", "tecnica": "Versión técnica"}
+SECTION_HEADINGS = tuple(
+    f"{number}. {title}" for number, title in enumerate(SECTION_TITLES, start=1)
+)
 
 
 @pytest.fixture()
@@ -163,6 +169,11 @@ def test_the_document_has_more_than_five_pages(client: TestClient) -> None:
     assert len(reader.pages) > MIN_PAGES
 
 
+@pytest.fixture(params=["ejecutiva", "tecnica"])
+def version(request: pytest.FixtureRequest) -> str:
+    return request.param
+
+
 def test_both_version_headings_are_present_executive_first(client: TestClient) -> None:
     configure()
     upload(client)
@@ -184,6 +195,86 @@ def test_spanish_accents_survive_text_extraction(client: TestClient) -> None:
         assert expected in text, expected
 
 
+def test_a_single_version_document_carries_only_its_own_nine_sections(
+    client: TestClient, version: str
+) -> None:
+    configure()
+    upload(client)
+
+    response = client.get("/api/report/pdf", params={"version": version})
+
+    assert response.status_code == 200, response.text
+    text = pdf_text(response.content)
+    other = "tecnica" if version == "ejecutiva" else "ejecutiva"
+    for heading in SECTION_HEADINGS:
+        assert heading in text, heading
+    assert VERSION_HEADINGS[version] in text
+    assert VERSION_HEADINGS[other] not in text
+    if version == "tecnica":
+        assert "Incidente\nLog_ID (evidencia)" in text
+    else:
+        assert "Incidente\nLog_ID (evidencia)" not in text
+
+
+def test_a_single_version_document_is_shorter_than_the_whole_report(
+    client: TestClient, version: str
+) -> None:
+    configure()
+    upload(client)
+
+    single = client.get("/api/report/pdf", params={"version": version})
+    whole = download(client)
+
+    assert single.status_code == 200, single.text
+    assert len(_pages(single.content)) < len(_pages(whole))
+
+
+def test_the_attachment_name_identifies_the_requested_version(
+    client: TestClient, version: str
+) -> None:
+    configure()
+    upload(client)
+
+    response = client.get("/api/report/pdf", params={"version": version})
+
+    assert response.status_code == 200, response.text
+    disposition = response.headers["content-disposition"]
+    match = ATTACHMENT_RE.match(disposition)
+    assert match, disposition
+    name = match.group("name")
+    assert name == f"informe-soc2-20261023-{version}.pdf"
+    assert name.isascii()
+    assert name == name.lower()
+    assert " " not in name
+
+
+def test_an_unknown_version_is_a_bad_request_in_spanish(client: TestClient) -> None:
+    configure()
+    upload(client)
+
+    response = client.get("/api/report/pdf", params={"version": "resumida"})
+
+    assert response.status_code == 400, response.text
+    detail = response.json()["detail"]
+    assert "ejecutiva" in detail
+    assert "tecnica" in detail
+
+
+def test_without_a_version_the_document_still_carries_both(client: TestClient) -> None:
+    configure()
+    upload(client)
+
+    response = client.get("/api/report/pdf")
+
+    assert response.status_code == 200, response.text
+    text = pdf_text(response.content)
+    assert "El documento reúne las dos versiones del mismo análisis" in text
+    for heading in SECTION_HEADINGS:
+        assert heading in text, heading
+    assert "Versión ejecutiva" in text
+    assert "Versión técnica" in text
+
+
 def test_the_cover_reports_the_classification_and_the_counts(client: TestClient) -> None:
     configure()
     upload(client)
@@ -191,7 +282,8 @@ def test_the_cover_reports_the_classification_and_the_counts(client: TestClient)
 
     text = cover_text(download(client))
 
-    assert "Consultora de ciberseguridad — Estocolmo" in text
+    assert "Consultora de ciberseguridad (Estocolmo)" in text
+    assert "Karen Gil, Analista SOC 2" in text
     assert "Clasificación general del análisis" in text
     assert "crítico" in text
     assert str(body["scope"]["events_analysed"]) in text

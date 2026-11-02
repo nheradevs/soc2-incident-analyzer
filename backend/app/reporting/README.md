@@ -1,4 +1,4 @@
-# `app.reporting` — informe determinístico + redacción asistida opcional
+# `app.reporting`: informe determinístico + redacción asistida opcional
 
 El **producto** es el informe determinístico: las nueve secciones obligatorias
 (FSD §7.4), en sus dos versiones (`ejecutiva` y `tecnica`), generadas con reglas

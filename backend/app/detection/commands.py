@@ -1,8 +1,8 @@
 """D4: suspicious commands and processes (blacklist over `command_norm`).
 
 The export redacts encoded payloads at the source (`[REDACTED_SYNTHETIC]`,
-`<base64_redacted>`), so a finding may say that a payload is encoded and unknown
-— never what it did (FSD §7.4).
+`<base64_redacted>`), so a finding may say that a payload is encoded and unknown,
+never what it did (FSD §7.4).
 """
 
 from __future__ import annotations

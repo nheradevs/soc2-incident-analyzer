@@ -3,8 +3,8 @@
 `compose_report` always renders the nine sections of both versions from the
 brief. When an OpenAI-compatible provider is configured, the narrative sections
 (sections 1, 6 and 7) are rewritten from the brief and verified by the guard;
-everything else — evidence lists, the rule-written justification and the
-mandatory limitations — stays exactly as the rules produced it.
+everything else (evidence lists, the rule-written justification and the
+mandatory limitations) stays exactly as the rules produced it.
 
 An unavailable provider is never a failure of the report: the payload states
 whether assisted writing is `no_configurada`, `deshabilitada_por_error` or

@@ -7,8 +7,8 @@ is accepted only when all of the following hold:
   executive version allows none, so it cannot leak technical identifiers);
 * every `INC-` identifier it names exists in the analysis;
 * every criticality it asserts is the one the classifier assigned, either to an
-  incident named in the same sentence or — when the section covers a single
-  level — to the section as a whole.
+  incident named in the same sentence or, when the section covers a single
+  level, to the section as a whole.
 
 A rejected rewrite leaves the deterministic text untouched and records the
 reasons, so a rejection can never remove content from the report.

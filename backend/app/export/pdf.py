@@ -8,13 +8,19 @@ and survive extraction from the generated file.
 
 Document structure:
 
-* cover — title, client, analysed window, generation date, overall
+* cover: title, client, analysed window, generation date, overall
   classification, the counts of the analysis, the criticality distribution and
   one neutral line about the narrative state;
-* contents — the two versions with the nine section titles of each;
-* the executive version, then the technical one, each starting on a new page
-  with its own banner, and each with its nine sections. The tabular sections of
-  the payload are drawn as tables; everything else as paragraphs.
+* contents: the versions included in the file with the nine section titles of
+  each;
+* the requested version (the executive one and then the technical one when no
+  version is requested), each starting on a new page with its own banner, and
+  each with its nine sections. The tabular sections of the payload are drawn as
+  tables; everything else as paragraphs.
+
+`version` selects one version of the payload: the executive document never
+carries the technical sections, and the other way round. `None` keeps the whole
+document of both versions for callers that do not choose one.
 """
 
 from __future__ import annotations
@@ -43,7 +49,6 @@ from app.export.content import (
     BLOCK_BULLET,
     BLOCK_PARAGRAPH,
     BLOCK_TABLE,
-    CONTENTS_NOTE_ES,
     FOOTER_LEFT_ES,
     HEADER_LEFT_ES,
     LEVEL_TABLE_HEADER,
@@ -376,7 +381,7 @@ def _contents_flowables(cover: Cover) -> list[Any]:
     flowables: list[Any] = [
         PageBreak(),
         Paragraph("Contenido del documento", STYLES["contents_title"]),
-        Paragraph(_xml(CONTENTS_NOTE_ES), STYLES["note"]),
+        Paragraph(_xml(cover.contents_note), STYLES["note"]),
     ]
     for label, titles in cover.contents:
         flowables.append(Paragraph(_xml(label), STYLES["contents_version"]))
@@ -412,10 +417,18 @@ def _version_flowables(report: dict[str, Any], version: str) -> list[Any]:
     return flowables
 
 
-def render_pdf(report: dict[str, Any], *, generated_at: datetime | None = None) -> bytes:
-    """Render the composed report as PDF bytes, deterministically for a payload."""
+def render_pdf(
+    report: dict[str, Any],
+    *,
+    version: str | None = None,
+    generated_at: datetime | None = None,
+) -> bytes:
+    """Render the composed report as PDF bytes, deterministically for a payload.
+
+    `version` renders only that version of the payload; `None` renders both.
+    """
     stamp = (generated_at or datetime.now()).strftime("%d/%m/%Y %H:%M")
-    cover = build_cover(report, generated_at=stamp)
+    cover = build_cover(report, generated_at=stamp, version=version)
     buffer = io.BytesIO()
     document = SimpleDocTemplate(
         buffer,
@@ -431,8 +444,8 @@ def render_pdf(report: dict[str, Any], *, generated_at: datetime | None = None) 
     )
     story: list[Any] = list(_cover_flowables(cover))
     story.extend(_contents_flowables(cover))
-    for version in versions_for(report):
-        story.extend(_version_flowables(report, version))
+    for key in versions_for(report, version):
+        story.extend(_version_flowables(report, key))
     decorate = _page_decorator(cover.document_id)
     document.build(
         story,

@@ -2,11 +2,15 @@
 
 `POST /api/report` already returns everything the document needs: the scope
 counts, the criticality distribution, the narrative state and the nine sections
-of both versions. Nothing here computes a fact, a count or a finding — the only
+of both versions. Nothing here computes a fact, a count or a finding; the only
 licence this module takes is *presentation*: a deterministic bullet of the
 report whose wording follows one of the known templates is turned into a table
 row, and any bullet that does not match is rendered as a paragraph instead of
 being guessed at.
+
+The document can be exported whole or as one version. `version` is the key of
+the requested version (`None` means the whole document), so the cover, the
+contents and the section list always agree on what the reader holds.
 """
 
 from __future__ import annotations
@@ -15,13 +19,15 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-CLIENT_ES = "Consultora de ciberseguridad — Estocolmo"
+CLIENT_ES = "Consultora de ciberseguridad (Estocolmo)"
 DOCUMENT_TITLE_ES = "Informe de análisis de incidentes de seguridad"
-DOCUMENT_SUBTITLE_ES = "SOC Nivel 2 — Análisis de export del SIEM"
+DOCUMENT_SUBTITLE_ES = "SOC Nivel 2: análisis de export del SIEM"
 DOCUMENT_PREFIX = "SOC2"
 NO_INCIDENTS_ES = "sin incidentes"
-HEADER_LEFT_ES = "Informe de análisis de incidentes de seguridad — SOC Nivel 2"
-FOOTER_LEFT_ES = CLIENT_ES
+HEADER_LEFT_ES = "Informe de análisis de incidentes de seguridad (SOC Nivel 2)"
+AUTHOR_ES = "Karen Gil, Analista SOC 2"
+# The client belongs on the cover; the footer carries the author of the report.
+FOOTER_LEFT_ES = AUTHOR_ES
 
 LEVEL_TABLE_HEADER = ("Nivel", "Incidentes", "Hallazgos")
 INCIDENT_TABLE_HEADER = ("Incidente", "Criticidad", "Ventana")
@@ -47,6 +53,11 @@ CONTENTS_NOTE_ES = (
     "El documento reúne las dos versiones del mismo análisis, la ejecutiva primero y la "
     "técnica después. Cada versión contiene las nueve secciones obligatorias del informe."
 )
+CONTENTS_NOTE_SINGLE_ES = (
+    "El documento contiene una sola versión del análisis y sus nueve secciones "
+    "obligatorias, sin la otra versión."
+)
+VERSIONS_TOGETHER_ES = "Ejecutiva y técnica"
 
 # Neutral wording of the narrative state (FSD RF7). None of these lines presents
 # the document as incomplete: the deterministic report is the product, and
@@ -81,18 +92,18 @@ BLOCK_TABLE = "table"
 # export reads the fields back out of the wording the payload already contains;
 # the patterns are anchored so a changed template degrades to a paragraph.
 _TECH_INCIDENT_RE = re.compile(
-    r"^• (?P<id>INC-\S+) · (?P<title>.+?) — criticidad (?P<level>\w+) "
+    r"^• (?P<id>INC-\S+) · (?P<title>.+?): criticidad (?P<level>\w+) "
     r"\(impacto [^)]+ × confianza [^)]+\), .+? eventos y .+? hallazgos\. "
     r"Ventana: (?P<start>\d{2}:\d{2}:\d{2}) → (?P<end>\d{2}:\d{2}:\d{2}) del "
     r"(?P<date>\d{2}/\d{2}/\d{4}) \(\d+ min\); .+\.$"
 )
 _EXEC_INCIDENT_RE = re.compile(
-    r"^• (?P<title>.+?) — criticidad (?P<level>\w+)\. Agrupa .+? hallazgos sobre "
+    r"^• (?P<title>.+?): criticidad (?P<level>\w+)\. Agrupa .+? hallazgos sobre "
     r".+?, con .+? eventos registrados entre las (?P<start>\d{2}:\d{2}:\d{2}) y las "
     r"(?P<end>\d{2}:\d{2}:\d{2}) del (?P<date>\d{2}/\d{2}/\d{4})\.$"
 )
 _TECH_EVIDENCE_RE = re.compile(
-    r"^(?P<id>INC-\S+) — .+? eventos de evidencia entre las "
+    r"^(?P<id>INC-\S+): .+? eventos de evidencia entre las "
     r"(?P<start>\d{2}:\d{2}:\d{2}) y las (?P<end>\d{2}:\d{2}:\d{2}) del "
     r"(?P<date>\d{2}/\d{2}/\d{4})\. Log_ID: (?P<logs>.+)\.$"
 )
@@ -142,6 +153,7 @@ class Cover:
     fields: tuple[tuple[str, str], ...]
     levels: tuple[tuple[str, ...], ...]
     narrative_note: str
+    contents_note: str
     contents: tuple[tuple[str, tuple[str, ...]], ...]
 
 
@@ -158,11 +170,20 @@ def document_id(report: dict[str, Any]) -> str:
     return f"{DOCUMENT_PREFIX}-{digits}" if digits else DOCUMENT_PREFIX
 
 
-def pdf_filename(report: dict[str, Any]) -> str:
-    """Stable, ASCII, space-free attachment name with the analysed date."""
+def pdf_filename(report: dict[str, Any], version: str | None = None) -> str:
+    """Stable, ASCII, space-free attachment name with date and version."""
     digits = document_date(report)
     stem = f"informe-soc2-{digits}" if digits else "informe-soc2"
+    if version is not None:
+        stem = f"{stem}-{version}"
     return _UNSAFE_NAME_RE.sub("-", stem).strip("-") + ".pdf"
+
+
+def version_label(report: dict[str, Any], version: str | None) -> str:
+    """Name of the version the reader holds: one, or both of them."""
+    if version is None:
+        return VERSIONS_TOGETHER_ES
+    return str(report["versions"][version]["label"])
 
 
 def duration_label(minutes: int) -> str:
@@ -189,7 +210,9 @@ def narrative_note(report: dict[str, Any]) -> str:
     return NARRATIVE_NOTE_ES.get(state, NARRATIVE_NOTE_FALLBACK_ES)
 
 
-def build_cover(report: dict[str, Any], *, generated_at: str) -> Cover:
+def build_cover(
+    report: dict[str, Any], *, generated_at: str, version: str | None = None
+) -> Cover:
     """Cover fields, criticality distribution and the table of contents."""
     scope = report["scope"]
     levels = tuple(
@@ -202,6 +225,7 @@ def build_cover(report: dict[str, Any], *, generated_at: str) -> Cover:
     fields = (
         ("Cliente", CLIENT_ES),
         ("Documento", document_id(report)),
+        ("Versión del documento", version_label(report, version)),
         ("Ventana analizada", window_label(scope)),
         ("Fecha de generación", generated_at),
         ("Clasificación general del análisis", classification),
@@ -214,10 +238,10 @@ def build_cover(report: dict[str, Any], *, generated_at: str) -> Cover:
     )
     contents = tuple(
         (
-            str(version["label"]),
-            tuple(str(section["title"]) for section in version["sections"]),
+            str(report["versions"][key]["label"]),
+            tuple(str(section["title"]) for section in report["versions"][key]["sections"]),
         )
-        for version in report["versions"].values()
+        for key in versions_for(report, version)
     )
     return Cover(
         document_id=document_id(report),
@@ -226,6 +250,7 @@ def build_cover(report: dict[str, Any], *, generated_at: str) -> Cover:
         fields=fields,
         levels=levels,
         narrative_note=narrative_note(report),
+        contents_note=CONTENTS_NOTE_ES if version is None else CONTENTS_NOTE_SINGLE_ES,
         contents=contents,
     )
 
@@ -327,8 +352,10 @@ def sections_for(report: dict[str, Any], version: str) -> tuple[Section, ...]:
     )
 
 
-def versions_for(report: dict[str, Any]) -> tuple[str, ...]:
+def versions_for(report: dict[str, Any], version: str | None = None) -> tuple[str, ...]:
     """Version keys in document order: executive first, then technical."""
+    if version is not None:
+        return (version,)
     return tuple(report["versions"])
 
 

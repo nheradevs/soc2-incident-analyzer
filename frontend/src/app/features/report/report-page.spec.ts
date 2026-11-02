@@ -185,7 +185,7 @@ describe('ReportPage', () => {
 
     expect(element().querySelector('.report-download-busy')).not.toBeNull();
 
-    const request = http.expectOne('/api/report/pdf');
+    const request = http.expectOne('/api/report/pdf?version=ejecutiva');
     expect(request.request.responseType).toBe('blob');
 
     const blob = new Blob(['%PDF-1.4'], { type: 'application/pdf' });
@@ -224,6 +224,27 @@ describe('ReportPage', () => {
     ).toBeFalse();
   });
 
+
+  it('asks the server for the version that is on screen', () => {
+    flushReport();
+
+    const tabs = fixture.nativeElement.querySelectorAll('.report-tabs button');
+    (tabs[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector(
+      '.report-download-button',
+    ) as HTMLButtonElement;
+    expect(button.textContent).toContain('versión técnica');
+    button.click();
+    fixture.detectChanges();
+
+    const request = http.expectOne('/api/report/pdf?version=tecnica');
+    request.flush(new Blob(['%PDF-'], { type: 'application/pdf' }), {
+      headers: { 'Content-Disposition': 'attachment; filename="informe-soc2-20261023-tecnica.pdf"' },
+    });
+    fixture.detectChanges();
+  });
   it('keeps one version on screen and moves the download action with the switch', () => {
     flushReport();
 

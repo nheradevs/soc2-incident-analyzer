@@ -1,8 +1,8 @@
 """Structured brief: the only material assisted writing may use (FSD RF5 / S8).
 
-`build_brief` copies the already-decided facts of the analysis — incident level
+`build_brief` copies the already-decided facts of the analysis (incident level
 and rule-written justification, each finding with its code, Spanish title,
-entity counts, evidence `Log_ID`s and the quantity its detector measured — into
+entity counts, evidence `Log_ID`s and the quantity its detector measured) into
 one JSON-serialisable object. The model is given this object plus the
 deterministic draft; it never receives the export and never chooses a finding,
 a level or a count.

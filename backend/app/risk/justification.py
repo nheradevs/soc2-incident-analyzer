@@ -1,7 +1,7 @@
 """Rule-written Spanish justification (FSD RF3).
 
-Every sentence is assembled from the finding's own numbers — its `Log_ID` list,
-its entity counts, its time window, the volume its detector measured — plus the
+Every sentence is assembled from the finding's own numbers (its `Log_ID` list,
+its entity counts, its time window, the volume its detector measured) plus the
 matrix factors that decided the level. There is no LLM here and no generic
 filler: the text always names the level, the factor that supports it and the
 factor that kept it from the next level up.

@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, from, map, mergeMap, throwError } from 'rxjs';
 
 import { ApiFailure } from '../models/ingest.models';
-import { ReportDownload, ReportPayload } from '../models/report.models';
+import { ReportDownload, ReportPayload, ReportVersionKey } from '../models/report.models';
 import { toApiFailure } from './ingest-api.service';
 
 /** Relative base path: the dev server proxies `/api` to the backend. */
@@ -85,9 +85,10 @@ export class ReportApiService {
   }
 
   /** The report as a PDF, requested as a blob with the filename the server suggests. */
-  downloadReportPdf(): Observable<ReportDownload> {
+  downloadReportPdf(version?: ReportVersionKey): Observable<ReportDownload> {
+    const params = version === undefined ? {} : { params: { version } };
     return this.http
-      .get(PDF_PATH, { observe: 'response', responseType: 'blob' })
+      .get(PDF_PATH, { observe: 'response', responseType: 'blob', ...params })
       .pipe(
         map((response) => ({
           blob: response.body ?? new Blob([], { type: 'application/pdf' }),

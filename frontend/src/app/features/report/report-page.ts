@@ -51,12 +51,9 @@ export class ReportPage implements OnInit, OnDestroy {
     return payload === null ? null : payload.versions[this.version()];
   });
 
-  /** The download action names the version that is on screen. */
+  /** The button names the version that is on screen, and downloads only that one. */
   readonly downloadLabel = computed(
-    () =>
-      `Descargar PDF · ${
-        this.version() === 'tecnica' ? 'versión técnica' : 'versión ejecutiva'
-      }`,
+    () => `Descargar versión ${this.version() === 'tecnica' ? 'técnica' : 'ejecutiva'}`,
   );
 
   readonly scope = computed<ReportScope | null>(() => this.payload()?.scope ?? null);
@@ -102,7 +99,7 @@ export class ReportPage implements OnInit, OnDestroy {
     this.downloading.set(true);
     this.downloadFailure.set(null);
 
-    this.downloadSubscription = this.api.downloadReportPdf().subscribe({
+    this.downloadSubscription = this.api.downloadReportPdf(this.version()).subscribe({
       next: (download: ReportDownload) => {
         this.downloading.set(false);
         this.api.saveReport(download);

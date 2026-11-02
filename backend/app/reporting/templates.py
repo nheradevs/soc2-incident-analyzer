@@ -2,8 +2,8 @@
 
 Both versions render the same nine mandatory sections from the structured brief:
 the eight of the client requirement plus `Limitaciones del análisis`, added in
-FSD §7.4. Every paragraph is computed from the analysis — no placeholder, no
-wall-clock value — so the same brief always produces the same bytes.
+FSD §7.4. Every paragraph is computed from the analysis (no placeholder, no
+wall-clock value), so the same brief always produces the same bytes.
 
 The two audiences differ in vocabulary, not in facts:
 
@@ -335,7 +335,7 @@ def _hallazgos_identificados(brief: dict[str, Any], version: str) -> list[str]:
         hosts = _count_noun(len(incident["entities"]["hosts"]), "equipo", "equipos")
         if version == "tecnica":
             body.append(
-                f"• {incident['id']} · {incident['title']} — criticidad "
+                f"• {incident['id']} · {incident['title']}: criticidad "
                 f"{incident['level']} (impacto {incident['impact']} × confianza "
                 f"{incident['confidence']}), {count_es(incident['event_count'])} eventos y "
                 f"{count_es(len(incident['findings']))} hallazgos. Ventana: "
@@ -344,7 +344,7 @@ def _hallazgos_identificados(brief: dict[str, Any], version: str) -> list[str]:
             )
         else:
             body.append(
-                f"• {incident['title']} — criticidad {incident['level']}. Agrupa "
+                f"• {incident['title']}: criticidad {incident['level']}. Agrupa "
                 f"{count_es(len(incident['findings']))} hallazgos sobre {accounts} "
                 f"y {hosts}, con {count_es(incident['event_count'])} eventos registrados "
                 f"entre las {incident['start']} y las {incident['end']} del "
@@ -372,7 +372,7 @@ def _explicacion_tecnica(brief: dict[str, Any], version: str) -> list[str]:
             )
             continue
         body.append(
-            f"{incident['id']} · {incident['title']} — "
+            f"{incident['id']} · {incident['title']}: "
             f"{count_es(len(incident['findings']))} hallazgos correlacionados "
             f"({_join_and(incident['categories_labels'])})."
         )
@@ -399,7 +399,7 @@ def _evidencias_logs(brief: dict[str, Any], version: str) -> list[str]:
         ]
         for incident in incidents:
             body.append(
-                f"{incident['id']} — {count_es(len(incident['evidence']))} eventos de "
+                f"{incident['id']}: {count_es(len(incident['evidence']))} eventos de "
                 f"evidencia entre las {incident['start']} y las {incident['end']} del "
                 f"{incident['date']}. Log_ID: {', '.join(incident['evidence'])}."
             )
@@ -433,7 +433,7 @@ def _criticidad_justificacion(brief: dict[str, Any], version: str) -> list[str]:
     for incident in brief["incidents"]:
         if version == "tecnica":
             body.append(
-                f"{incident['id']} — criticidad {incident['level']} (impacto "
+                f"{incident['id']}: criticidad {incident['level']} (impacto "
                 f"{incident['impact']} × confianza {incident['confidence']}). "
                 f"{_sentence(incident['justification'])}"
             )
@@ -448,7 +448,7 @@ def _criticidad_justificacion(brief: dict[str, Any], version: str) -> list[str]:
             else "La evidencia sostiene el nivel asignado sin marcas de ambigüedad."
         )
         body.append(
-            f"{incident['id']} — criticidad {incident['level']}: impacto potencial "
+            f"{incident['id']}, criticidad {incident['level']}: impacto potencial "
             f"{incident['impact']} y confianza {incident['confidence']} en la evidencia, "
             f"que agrupa {count_es(incident['event_count'])} eventos y "
             f"{count_es(len(incident['findings']))} hallazgos. {validation}"
@@ -525,7 +525,7 @@ def _plan_de_accion(brief: dict[str, Any], version: str) -> list[str]:
         )
         body.extend(
             [
-                f"{incident['title']}{account} — criticidad {incident['level']}",
+                f"{incident['title']}{account}: criticidad {incident['level']}",
                 f"Investigar: {_join_semicolon(investigate)}.",
                 f"Contener: {_join_semicolon(contain)}.",
                 f"Remediar: {_join_semicolon(remediate)}.",

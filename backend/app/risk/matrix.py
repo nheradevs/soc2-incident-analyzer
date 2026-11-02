@@ -4,9 +4,9 @@ The level of a finding is produced in three auditable steps and combined in one
 explicit table, so the classification never hides inside a chain of `if`s.
 
 **Impact potential** answers what the observed behaviour can *do* if it is real.
-It is keyed on the detector's own rule identity — the rule code, plus the rule
-variant the detector publishes for `D4` (command pattern) and `D6` (anomaly
-kind) — because two `D4` findings can be wildly different: `whoami` is merely a
+It is keyed on the detector's own rule identity, meaning the rule code plus the
+rule variant the detector publishes for `D4` (command pattern) and `D6` (anomaly
+kind), because two `D4` findings can be wildly different: `whoami` is merely a
 reconnaissance step, an encoded PowerShell payload is code execution, and a
 process spawned by the IIS application pool is a web shell.
 
@@ -109,7 +109,7 @@ BREADTH_MIN_ENTITIES = 3
 BREADTH_POINTS = 1
 EXTERNAL_ORIGIN_POINTS = 1
 VALIDATION_PENALTY = 1
-# (minimum points, confidence) — first matching row wins.
+# (minimum points, confidence); first matching row wins.
 CONFIDENCE_BY_POINTS: tuple[tuple[int, str], ...] = ((4, "alta"), (2, "media"), (0, "baja"))
 
 # Caps applied after the matrix.
@@ -148,7 +148,7 @@ def _id_segment(finding: Finding) -> str:
 
     `detection.context.build_finding` composes ids as `code:variant@entity@time`,
     so the segment between the first colon and the first `@` is the rule's own
-    variant — the command pattern for `D4`, the event id or the account for `D6`.
+    variant: the command pattern for `D4`, the event id or the account for `D6`.
     An unexpected id shape falls back to the code instead of failing.
     """
     _, _, remainder = finding.id.partition(":")

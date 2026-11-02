@@ -1,4 +1,4 @@
-"""D6: other anomalies — rarity, bulk object reads and out-of-window persistence.
+"""D6: other anomalies (rarity, bulk object reads and out-of-window persistence).
 
 Two calibrations of FSD §6 live here:
 

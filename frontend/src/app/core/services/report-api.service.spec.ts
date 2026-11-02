@@ -71,9 +71,7 @@ describe('ReportApiService', () => {
     let received: ReportDownload | undefined;
     service.downloadReportPdf().subscribe((download) => (received = download));
 
-    http
-      .expectOne('/api/report/pdf')
-      .flush(new Blob(['%PDF-1.4'], { type: 'application/pdf' }));
+    http.expectOne('/api/report/pdf').flush(new Blob(['%PDF-1.4'], { type: 'application/pdf' }));
 
     expect(received?.filename).toBe('informe-soc2.pdf');
   });
@@ -120,5 +118,13 @@ describe('ReportApiService', () => {
     expect(anchor.href).toContain('blob:informe-soc2');
     expect(anchor.isConnected).toBeFalse();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:informe-soc2');
+  });
+
+  it('sends the requested version so the server can render only that one', () => {
+    service.downloadReportPdf('tecnica').subscribe();
+
+    const request = http.expectOne('/api/report/pdf?version=tecnica');
+    expect(request.request.params.get('version')).toBe('tecnica');
+    request.flush(new Blob(['%PDF-1.4'], { type: 'application/pdf' }));
   });
 });
