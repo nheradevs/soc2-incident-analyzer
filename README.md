@@ -8,6 +8,14 @@ versions, exportable to PDF. The scenario is the one the project was built for: 
 consultancy in Stockholm, a SOC L2 analyst, and an export of a day of logs with **no access to the
 SIEM, EDR, DNS or netflow** that produced it.
 
+**Demo video (4 min 49 s)**
+
+<https://drive.google.com/file/d/1KHGxJLSMenQQ5MICUFFuqK-Gg2xovTcf/view?usp=sharing>
+
+A walkthrough of the same export from the upload to the PDF: the data-quality panel, the six
+incidents, the dashboard, the two report versions and the download, including the service-account
+case that is reported as requiring validation instead of being called ransomware.
+
 **Live: <http://104.198.16.58>**. The real export is analysed end to end there, from the upload to
 the PDF. It runs on a single GCP `e2-micro` instance from this repository, so what you see is the
 code in `main`, not a mockup.
