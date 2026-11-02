@@ -1,8 +1,8 @@
-# Design polish — Analizador SOC 2 artboards
+# Design polish: Analizador SOC 2 artboards
 
 Ajustes pedidos por la autora sobre las tres maquetas de `design/soc2-analisis/`.
 Only the design deliverable changes; `frontend/` and `backend/` are out of scope.
-Commits: pending — `design/` is still untracked (see L3).
+Commits: pending. `design/` is still untracked (see L3).
 
 ## Specs
 
@@ -29,13 +29,13 @@ Commits: pending — `design/` is still untracked (see L3).
 
 ## Tasks
 
-- T1 [S1-S3,S7,S9,S18] Tokens de criticidad + cabecera y pie compartidos en las tres maquetas — **completa** — commit: pendiente
-- T2 [S4,S6,S8] `cargar.html`: búsqueda y tabla de eventos — **completa** — commit: pendiente
-- T3 [S10-S12] `analisis.html`: criticidad, barras y gráfico en móvil — **completa** — commit: pendiente
-- T4 [S13-S17] `informe.html`: hallazgos, switch de una versión y descarga — **completa** — commit: pendiente
-- T5 [S2,S5,S17] `decisiones.md` y `design.json` (nota de búsqueda AJAX, marca, trade-offs) — **completa** — commit: pendiente
-- T6 [todas] Verificación: las tres maquetas abren, se ven en tableta y móvil y no hay desbordes — **completa** — commit: pendiente
-- T7 [S19] `analisis.html`: gráfico de horas seleccionable con detalle por tramo y pico por defecto, sin estiramiento de la tarjeta — **completa** — commit: pendiente
+- T1 [S1-S3,S7,S9,S18] Tokens de criticidad + cabecera y pie compartidos en las tres maquetas. **Completa**. Commit: pendiente.
+- T2 [S4,S6,S8] `cargar.html`: búsqueda y tabla de eventos. **Completa**. Commit: pendiente.
+- T3 [S10-S12] `analisis.html`: criticidad, barras y gráfico en móvil. **Completa**. Commit: pendiente.
+- T4 [S13-S17] `informe.html`: hallazgos, switch de una versión y descarga. **Completa**. Commit: pendiente.
+- T5 [S2,S5,S17] `decisiones.md` y `design.json` (nota de búsqueda AJAX, marca, trade-offs). **Completa**. Commit: pendiente.
+- T6 [todas] Verificación: las tres maquetas abren, se ven en tableta y móvil y no hay desbordes. **Completa**. Commit: pendiente.
+- T7 [S19] `analisis.html`: gráfico de horas seleccionable con detalle por tramo y pico por defecto, sin estiramiento de la tarjeta. **Completa**. Commit: pendiente.
 
 ## Log
 
@@ -44,6 +44,6 @@ Commits: pending — `design/` is still untracked (see L3).
 - L2: Decisión de marca. Se reemplaza «Analizador SOC 2» por «Análisis SOC 2»: entra en una línea a 13 px junto al logo y dice qué hace la herramienta. Alternativas descartadas: «SOC 2» solo (pierde el qué), «SOC 2 Analyzer» (inglés en una interfaz en español), «SOC 2 · Riesgo» (deja afuera el informe).
 - L3: `design/` sigue sin trackear en `main` (`?? design/`). No se commitea: la decisión de versionar el paquete de diseño quedó abierta en el turno anterior y no la pidió la autora.
 - L4: Verificación ejecutada con Chromium real (playwright), midiendo desborde horizontal de la pantalla real en 1440, 832 y 390 px: las tres maquetas dan OK en los tres anchos. El switch del informe se probó de verdad: al cargar solo es visible `#ejecutiva`, al tocar «Versión técnica» solo queda `#tecnica`, y la etiqueta y el `href` de descarga pasan a «descarga PDF · versión técnica» / `#tecnica`, y vuelven atrás. Las dos versiones terminan en «Karen Gil, Analista SOC 2».
-- L5: Dos bugs preexistentes encontrados al verificar, no pedidos pero necesarios para que lo pedido se vea: (a) el relleno de las barras de `.hbars` es un `<span>` dentro de un `<span>`, así que `width`/`height` se ignoraban y todas las barras salían vacías — eso es lo que se veía como «las barras no se llenan»; se resolvió con `display: block`. (b) `scrollbar-width`/`scrollbar-color` hacen que Chromium ignore `::-webkit-scrollbar`, así que la barra de la tabla y del gráfico no se dibujaba; se quitaron esas dos propiedades y la barra vuelve a verse.
+- L5: Dos bugs preexistentes encontrados al verificar, no pedidos pero necesarios para que lo pedido se vea: (a) el relleno de las barras de `.hbars` es un `<span>` dentro de un `<span>`, así que `width`/`height` se ignoraban y todas las barras salían vacías, que es lo que se veía como «las barras no se llenan»; se resolvió con `display: block`. (b) `scrollbar-width`/`scrollbar-color` hacen que Chromium ignore `::-webkit-scrollbar`, así que la barra de la tabla y del gráfico no se dibujaba; se quitaron esas dos propiedades y la barra vuelve a verse.
 - L6: El tono «bajo» quedó finalmente en `#A9A89F` (neutro cálido) y no en el verde salvia que se probó primero, para no romper la regla de la paleta de no introducir un verde.
 - L7: Verificación de S19 con Chromium real en 1440 y 390: la tarjeta deja de estirarse (462 px contra 585 px de «Tipos de hallazgo», antes ambas a 585 con el hueco adentro); al cargar el detalle muestra 09:00 · 176 eventos · «Pico del día»; al tocar 07:00 y 12:00 cambian hora, porcentaje, incidentes, se oculta la etiqueta de pico y el `aria-pressed` se mueve a la barra elegida; los identificadores quedan en una sola línea (`white-space: nowrap`). Sin desbordes en 1440, 832 y 390.

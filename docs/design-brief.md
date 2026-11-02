@@ -43,7 +43,7 @@ Sobre el archivo real que acompaña al proyecto: 715 eventos, 12 columnas, una v
 - Tono profesional y directo, sin lenguaje de ventas ni de marketing.
 - Nada de términos exagerados ni superlativos.
 - No inventar información ni métricas.
-- No usar guiones largos ni rayas (—) en ningún texto de la interfaz ni en el PDF.
+- No usar guiones largos ni rayas en ningún texto de la interfaz ni en el PDF.
 - No poner mayúscula después de dos puntos, salvo que siga un nombre propio.
 - Respetar el uso de mayúsculas, del punto y seguido, del punto y aparte y del punto y coma.
 - Evitar las construcciones que suenan a texto generado por una máquina.
@@ -103,8 +103,4 @@ La interfaz es oscura. La paleta no debe ampliarse con colores ajenos salvo los 
 
 ## 12. Deuda visual del estado actual
 
-- El texto de la interfaz y del PDF usa guiones largos en once lugares. Deben eliminarse.
-- El tratamiento actual es de usted en varios mensajes. Debe pasar a tú.
-- El PDF incluye como pie la línea de la consultora y no la autoría.
-- El logotipo no está en el repositorio y la interfaz no lo usa.
 - No hay captura del producto en el README del repositorio.

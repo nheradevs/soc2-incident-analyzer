@@ -1,6 +1,6 @@
-# FSD — Aplicación de Análisis de Incidentes SOC Nivel 2
+# FSD: aplicación de análisis de incidentes SOC Nivel 2
 
-**Proyecto final — Bootcamp Analista SOC Nivel 2**
+**Proyecto final del Bootcamp Analista SOC Nivel 2**
 **Versión:** 0.2 (esquema real validado contra el archivo de entrada)
 **Fecha:** 2025-11
 **Cambio respecto de 0.1:** el archivo `SOC_L2_Logs_Ampliados_Multiples_Incidentes.xlsx` ya está en el repo y fue perfilado. Este documento reemplaza los supuestos sobre el esquema por hechos medidos: estructura real (§3), trampas de datos que obligan a una capa de normalización (§4), umbrales de detección derivados de la línea base real (§6) e incidentes de referencia para aceptación (§8).
@@ -9,11 +9,11 @@
 
 ## 1. Visión general
 
-Aplicación web que importa un archivo Excel exportado de un SIEM (`SOC_L2_Logs_Ampliados_Multiples_Incidentes.xlsx`), ejecuta un motor de detección determinístico sobre los logs, correlaciona eventos y produce un informe técnico de incidentes en español — en versión ejecutiva y técnica — exportable a PDF. La IA (nan.builders, API OpenAI-compatible) apoya la redacción, pero **nunca decide hallazgos**: toda conclusión se sustenta en evidencia citada de los logs.
+Aplicación web que importa un archivo Excel exportado de un SIEM (`SOC_L2_Logs_Ampliados_Multiples_Incidentes.xlsx`), ejecuta un motor de detección determinístico sobre los logs, correlaciona eventos y produce un informe técnico de incidentes en español, en versión ejecutiva y técnica, exportable a PDF. La IA (nan.builders, API OpenAI-compatible) apoya la redacción, pero **nunca decide hallazgos**: toda conclusión se sustenta en evidencia citada de los logs.
 
 **Escenario:** consultora de ciberseguridad en Estocolmo; el cliente exportó los logs de un grupo de incidentes y el analista SOC N2 debe identificar qué pasó sin acceso a plataformas.
 
-**Realidad del dato de entrada (medida, no supuesta):** 715 filas × 12 columnas, una sola hoja (`SIEM Export`), 44 KB, ventana de **5 h 58 min de un solo día** (2026-10-23 07:46:07 → 13:44:06). El archivo es de origen sintético y sus IPs externas pertenecen a rangos de documentación RFC 5737 — ver §4.9.
+**Realidad del dato de entrada (medida, no supuesta):** 715 filas × 12 columnas, una sola hoja (`SIEM Export`), 44 KB, ventana de **5 h 58 min de un solo día** (2026-10-23 07:46:07 → 13:44:06). El archivo es de origen sintético y sus IPs externas pertenecen a rangos de documentación RFC 5737; ver §4.9.
 
 ---
 
@@ -101,14 +101,14 @@ Estas diez condiciones **no son opcionales**: cada una, ignorada, produce detecc
 
 ## 5. Requisitos funcionales
 
-### RF1 — Carga de archivos
+### RF1. Carga de archivos
 - El usuario sube un archivo `.xlsx` desde la interfaz (drag & drop + selector).
 - Validación: extensión `.xlsx`, tamaño máximo configurable (default 50 MB), rechazo con mensaje claro de otro formato.
 - El backend parsea con pandas/openpyxl y devuelve: esquema detectado (columnas), total de filas, rango temporal de los eventos y **reporte de calidad de datos** (nulos por columna, hosts duplicados detectados, tipos mixtos en `Event_ID`).
 - Vista de tabla paginada con búsqueda y ordenamiento; cada fila muestra los campos del log y resalta las filas que son evidencia de un hallazgo.
 - El archivo analizado queda en sesión; se puede reemplazar cargando otro.
 
-### RF2 — Análisis de seguridad (motor de detección)
+### RF2. Análisis de seguridad (motor de detección)
 Motor **determinístico por reglas** sobre el DataFrame normalizado; cada detector produce hallazgos con evidencia (`Log_ID` de las filas que los sustentan). Los umbrales de la tabla **se derivan de la línea base medida** en el archivo real (§6), no de valores arbitrarios.
 
 | # | Detector | Regla concreta |
@@ -117,7 +117,7 @@ Motor **determinístico por reglas** sobre el DataFrame normalizado; cada detect
 | D1b | Password spray | ≥5 `4625` desde la **misma IP externa** contra ≥3 cuentas distintas en 15 min |
 | D1c | Exposición externa | Cualquier `4625` con `ip_class=external` eleva severidad, **aunque el conteo sea bajo** |
 | D1d | Compromiso posterior | `4624` exitoso en ≤15 min desde la misma IP/cuenta que un bloque D1a/D1b → escalar a crítico |
-| D2 | Inicios sospechosos | `4624` con IP externa; `4624` sobre cuentas privilegiadas; `4624` fuera de horario hábil (ciego con este archivo — §7.4) |
+| D2 | Inicios sospechosos | `4624` con IP externa; `4624` sobre cuentas privilegiadas; `4624` fuera de horario hábil (ciego con este archivo; ver §7.4) |
 | D3 | Escalamiento | `4672` **correlacionado** con origen externo o con un `4625→4624` previo de la misma IP/cuenta. Un `4672` interno aislado es línea base y **no** genera hallazgo |
 | D4 | Comandos y procesos | Lista negra sobre `Process_CommandLine`: `-enc`/`-EncodedCommand`, `vssadmin delete shadows`, `net.exe view`, `whoami`, archivos comprimidos (`7z`/`tar`) con destino en `C:\Users\Public` o `C:\Temp`, ejecución desde `C:\ProgramData`, y **proceso interactivo con padre `IIS APPPOOL\*`** |
 | D5 | Movimiento lateral | `4624` LogonType=3/10 donde `lateral_source` ≠ host destino, seguido de `5140`/`5145`/`4663` en ≤10 min sobre el host destino |
@@ -128,13 +128,13 @@ Motor **determinístico por reglas** sobre el DataFrame normalizado; cada detect
 - Cada hallazgo incluye: tipo, severidad propuesta, entidades involucradas, conteo, primera/última ocurrencia, **referencias a los `Log_ID` de evidencia** y `requires_validation: bool` para los casos ambiguos (ver §8, INC-6).
 - Límite de rigor (S8): el motor solo afirma lo que los logs muestran; si el esquema no permite detectar algo, se declara en el informe como limitación.
 
-### RF3 — Clasificación de riesgos
+### RF3. Clasificación de riesgos
 - Cada hallazgo/incidente recibe criticidad **crítico / alto / medio / bajo** según matriz: impacto potencial × confianza de la evidencia.
-- La justificación es texto generado por reglas (plantilla con datos del hallazgo), no por IA — trazable y auditable.
+- La justificación es texto generado por reglas (plantilla con datos del hallazgo), no por IA: trazable y auditable.
 - El dashboard, el informe y el PDF usan esta misma clasificación (fuente única de verdad).
 - La `Severity` del SIEM **no** se usa como insumo de la matriz; se muestra aparte como dato de origen (§4.10).
 
-### RF4 — Dashboard
+### RF4. Dashboard
 - KPIs: total de eventos, incidentes por criticidad, usuarios/hosts afectados, ventana temporal, cobertura de detección por categoría.
 - Cuatro gráficos de barras hechos con CSS sobre los agregados que ya devuelve el payload, sin librería de gráficos: eventos por hora, tipos de hallazgo detectados, equipos con más eventos y salida a destinos externos.
 - El gráfico de eventos por hora es también un selector: cada tramo es un botón, el tramo activo es estado del componente y el pico es el estado inicial. El detalle muestra el porcentaje sobre el total y los incidentes que cruzan el tramo.
@@ -143,7 +143,7 @@ Motor **determinístico por reglas** sobre el DataFrame normalizado; cada detect
 - **No** se muestra "top IPs de origen" como indicador de riesgo: en este archivo no es informativo (§4.8). Se muestra sí como "origen externo vs interno".
 - Lista de incidentes con drill-down: clic → detalle del hallazgo con su evidencia (`Log_ID`).
 
-### RF5 — Informe técnico (IA + reglas)
+### RF5. Informe técnico (IA + reglas)
 Dos versiones en español, mismo contenido estructural:
 1. **Ejecutiva:** lenguaje no técnico, foco en impacto de negocio y plan de acción.
 2. **Técnica:** detalle por hallazgo, evidencias citadas (`Log_ID`), recomendaciones específicas.
@@ -157,16 +157,17 @@ Estructura obligatoria:
 6. Posible impacto en la organización
 7. Plan de acción: investigar → contener → remediar
 8. Recomendaciones generales de seguridad
-9. **Limitaciones del análisis** (§7.4) — obligatoria, no opcional
+9. **Limitaciones del análisis** (§7.4), obligatoria y no opcional
 
 **Guardarraíl anti-alucinación:** el backend arma un *brief* estructurado con los hallazgos ya validados + muestras de evidencia y pide al LLM que **redacte**, no que analice. El texto del LLM se valida: los `Log_ID` citados deben existir y corresponder a la evidencia del hallazgo que se está redactando; si no, se descarta y se usa la plantilla determinística.
 
-### RF6 — Exportación PDF
+### RF6. Exportación PDF
 - Generación server-side con ReportLab/WeasyPrint a partir del contenido estructurado del informe (no screenshot del HTML).
 - Incluye portada (título, cliente, fecha, clasificación), tablas de hallazgos, las dos versiones y las limitaciones.
 - Descarga directa desde la UI.
+- `GET /api/report/pdf?version=ejecutiva` o `?version=tecnica` devuelve solo esa versión: portada, contenido y sus nueve secciones, sin nada de la otra. Sin el parámetro el documento sigue trayendo las dos. Un valor desconocido es un 400 en español que nombra los dos valores aceptados. El nombre del adjunto identifica la versión, por ejemplo `informe-soc2-20261023-tecnica.pdf`.
 
-### RF7 — IA integrada (opcional, cualquier proveedor OpenAI-compatible)
+### RF7. IA integrada (opcional, cualquier proveedor OpenAI-compatible)
 
 El requisito del bootcamp es **usar IA para construir el proyecto** (agentes, modelos, vibecoding), no contratar un modelo pago para dentro de la app. En consecuencia:
 
@@ -176,7 +177,7 @@ El requisito del bootcamp es **usar IA para construir el proyecto** (agentes, mo
 - Con modelo activo, la generación usa `stream: true` (sin streaming el gateway puede cortar la request) y `reasoning_effort` configurable.
 - Estados explícitos y distintos: `no_configurada` (no hay clave; no es un fallo), `deshabilitada_por_error` (timeout, HTTP error o salida rechazada) y `aplicada`. En los tres estados el informe sale completo; el estado se informa una sola vez, sin presentar el informe como incompleto.
 
-### RF8 — Seguridad de la aplicación
+### RF8. Seguridad de la aplicación
 - Upload: validación de tipo MIME + extensión + tamaño; archivo procesado en memoria/temporal con limpieza.
 - API key solo en backend; el frontend nunca ve credenciales.
 - Sanitización: el contenido del Excel y la salida del LLM se renderizan como texto, nunca como HTML crudo (los logs contienen HTML/URI embebidos).
@@ -228,27 +229,27 @@ Medición sobre los 715 registros reales. La columna "línea base" es lo que el 
 
 Seis clústeres distintos, verificados por lectura directa. Sirven como **caso de aceptación** (§12) y como fixture de regresión del motor. Todos los números y `Log_ID` son citables en el informe.
 
-### INC-1 · Password spray → acceso exitoso → privilegios — `203.0.113.74` → `DC-01`
+### INC-1 · Password spray, acceso exitoso y privilegios desde `203.0.113.74` hacia `DC-01`
 33 fallos `4625 bad password` sobre 8 cuentas distintas, cadencia exacta de **19 s**, 08:25:00 → 08:35:08 (`EVT-00057` … `EVT-00111`). Acceso exitoso `EVT-00123` (08:39, `4624`, `CORP\mgarcia` en `DC-01`) y `EVT-00126` (08:40, `4672` en `WS-031`).
 **Categorías:** fuerza bruta (variante spray), inicio sospechoso, escalamiento.
 
-### INC-2 · Kill chain completa vía RDP — `198.51.100.77` → `APP-SRV01` → `FS-SRV01`
-`EVT-00174/175/178/180` (09:02–09:05, `4625` LogonType=10) → `EVT-00188` (09:06, `4624` RDP como `CORP\admin`) → `EVT-00193` (`4672`) → `EVT-00198` (`powershell.exe -NoProfile -EncodedCommand`, parent `cmd.exe`) → `EVT-00207` (`4104`: `Get-LocalGroupMember Administrators; Get-SmbShare`) → `EVT-00214` (`net.exe view \\FS-SRV01`) → `EVT-00225` (09:16, `4624` LogonType=3 con `source=APP-SRV01` — **movimiento lateral**) → `EVT-00227` (share `\Finance`) → `EVT-00231` (`Finance\Budget2027.xlsx`) → `EVT-00232` (`tar.exe -a -c -f C:\Temp\finance.zip C:\Temp\reports`) → `EVT-00235` (09:21, conexión saliente a `203.0.113.88:443` con `powershell.exe`).
+### INC-2 · Kill chain completa vía RDP desde `198.51.100.77` hacia `APP-SRV01` y `FS-SRV01`
+`EVT-00174/175/178/180` (09:02–09:05, `4625` LogonType=10) → `EVT-00188` (09:06, `4624` RDP como `CORP\admin`) → `EVT-00193` (`4672`) → `EVT-00198` (`powershell.exe -NoProfile -EncodedCommand`, parent `cmd.exe`) → `EVT-00207` (`4104`: `Get-LocalGroupMember Administrators; Get-SmbShare`) → `EVT-00214` (`net.exe view \\FS-SRV01`) → `EVT-00225` (09:16, `4624` LogonType=3 con `source=APP-SRV01`, **movimiento lateral**) → `EVT-00227` (share `\Finance`) → `EVT-00231` (`Finance\Budget2027.xlsx`) → `EVT-00232` (`tar.exe -a -c -f C:\Temp\finance.zip C:\Temp\reports`) → `EVT-00235` (09:21, conexión saliente a `203.0.113.88:443` con `powershell.exe`).
 **20 min, 13 eventos. Cubre las 6 categorías requeridas.** Es el hallazgo principal del informe.
 
-### INC-3 · Web shell / explotación de aplicación web — `192.0.2.91` → `WEB-01`
-`EVT-00571` (12:10, `200` en `/uploads/test.aspx?cmd=whoami` — **ejecución exitosa**) → 20 requests a `/login?user=admin`, `/admin/` (`500`), `/api/v1/export` (`200`) hasta `EVT-00596` (12:14) → `EVT-00599` (12:15, `4688`: `cmd.exe /c whoami` lanzado por `IIS APPPOOL\DefaultAppPool`).
+### INC-3 · Web shell y explotación de aplicación web desde `192.0.2.91` hacia `WEB-01`
+`EVT-00571` (12:10, `200` en `/uploads/test.aspx?cmd=whoami` con **ejecución exitosa**) → 20 requests a `/login?user=admin`, `/admin/` (`500`), `/api/v1/export` (`200`) hasta `EVT-00596` (12:14) → `EVT-00599` (12:15, `4688`: `cmd.exe /c whoami` lanzado por `IIS APPPOOL\DefaultAppPool`).
 **Categorías:** comandos y procesos, otras anomalías. La ejecución exitosa del web shell es el hallazgo de mayor criticidad de este clúster.
 
-### INC-4 · Exfiltración vía proxy — `WS-018` · `CORP\rrojas`
-`EVT-00428` (10:42, `7z.exe a C:\Users\Public\archive.7z C:\Legal\*.docx` — staging) → 22 `PROXY_ACCESS` HTTPS POST a `198.51.100.88:443`, 10:43:00 → 10:49:18, **253,3 MB** totales (5,8–17,3 MB por request), URI `/upload/session/1…22`.
+### INC-4 · Exfiltración vía proxy en `WS-018` con `CORP\rrojas`
+`EVT-00428` (10:42, `7z.exe a C:\Users\Public\archive.7z C:\Legal\*.docx` como preparación) → 22 `PROXY_ACCESS` HTTPS POST a `198.51.100.88:443`, 10:43:00 → 10:49:18, **253,3 MB** totales (5,8–17,3 MB por request), URI `/upload/session/1…22`.
 **Categorías:** otras anomalías / exfiltración.
 
-### INC-5 · Persistencia con masquerading — `APP-SRV01` · `CORP\helpdesk`
+### INC-5 · Persistencia con masquerading en `APP-SRV01` con `CORP\helpdesk`
 `EVT-00523` (11:37, `4698`: tarea `\Microsoft\Windows\UpdateCheck` → `powershell.exe -File C:\ProgramData\updatecheck.ps1`) → `EVT-00524` (11:38, `7045`: servicio `WinUpdateHelper` → `C:\ProgramData\wuhelper.exe`) → 5 ejecuciones posteriores (`EVT-00528/542/548/559/564`, cada 6 min).
-**Categorías:** otras anomalías (persistencia), comandos y procesos. Nota: `helpdesk` es cuenta de soporte, no administrador de sistemas — el hallazgo debe indicar el desvío de rol.
+**Categorías:** otras anomalías (persistencia), comandos y procesos. Nota: `helpdesk` es cuenta de soporte, no administrador de sistemas; el hallazgo debe indicar el desvío de rol.
 
-### INC-6 · Cuenta de servicio sospechosa — `WS-023` + `FS-SRV01` · `CORP\backupsvc` (**caso ambiguo, `requires_validation`**)
+### INC-6 · Cuenta de servicio sospechosa en `WS-023` y `FS-SRV01` con `CORP\backupsvc` (**caso ambiguo, `requires_validation`**)
 `EVT-00280` (09:36, PowerShell `-EncodedCommand`) → 16× `4663` sobre `Finance\FY2026\document_000..015.xlsx` cada 16 s (09:37:00 → 09:41:00, `EVT-00284…00309`) → `EVT-00314` (09:42, `vssadmin.exe delete shadows /all /quiet`).
 **Ambigüedad que el informe debe declarar:** `backupsvc` también realiza lecturas legítimas de `Finance` (23 de los 64 eventos `4663`). Un detector naíf de "acceso masivo = exfiltración" produce un falso positivo, y `vssadmin delete shadows` es precursor de ransomware **pero también** lo usan herramientas de backup. Se reporta como **crítico/requiere validación**, no como ransomware confirmado. Este caso es el que demuestra el criterio de rigor (S8).
 
@@ -282,9 +283,9 @@ backend/   FastAPI (Python 3.10+)
 | `/api/events` | GET | Eventos paginados (tabla), filtrable por `Log_ID` |
 | `/api/incidents/{incident_id}` | GET | Drill-down de un incidente: clasificación, hallazgos con su justificación y las **filas reales** del export citadas como evidencia (unidas por `Log_ID`, 36 columnas) |
 | `/api/report` | POST | Genera informe (SSE con progreso, streaming IA) |
-| `/api/report/pdf` | GET | Descarga el PDF |
+| `/api/report/pdf` | GET | Descarga el PDF completo; con `?version=ejecutiva` o `?version=tecnica`, solo esa versión |
 
-**Estado:** sin base de datos — el DataFrame analizado vive en memoria por sesión (suficiente para demo; sesión = proceso único).
+**Estado:** sin base de datos: el DataFrame analizado vive en memoria por sesión (suficiente para demo; sesión = proceso único).
 
 ---
 
@@ -302,7 +303,7 @@ El bloqueante de la v0.1 ("se necesita el archivo real") **está resuelto**: el 
 | F5 | Informe IA (2 versiones + limitaciones) + guardarraíl de citas | RF5, RF7 | 1-2 d |
 | F6 | Export PDF | RF6 | 1 d |
 | F7 | Seguridad + fixture de volumen sintético + README | RF8, §7 | 1 d |
-| — | Video demo (≤ 5 min) — lo graba el usuario | Entregable bootcamp | — |
+| n/a | Video demo (≤ 5 min), lo graba el usuario | Entregable bootcamp | n/a |
 
 ---
 

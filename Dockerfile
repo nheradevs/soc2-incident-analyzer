@@ -7,11 +7,11 @@
 # `docker compose build` on the VM, which is why the VM needs swap), and only the
 # emitted `dist/frontend/browser` tree travels into the runtime images.
 #
-#   api  — FastAPI + pandas + ReportLab, no dev dependencies, non-root.
-#   web  — Caddy, the public entry point: static bundle + `/api/*` proxy.
+#   api:  FastAPI + pandas + ReportLab, no dev dependencies, non-root.
+#   web:  Caddy, the public entry point: static bundle + `/api/*` proxy.
 
 # ---------------------------------------------------------------------------
-# Stage 1 — frontend build (Angular production bundle).
+# Stage 1: frontend build (Angular production bundle).
 # ---------------------------------------------------------------------------
 FROM node:22 AS frontend-build
 
@@ -30,7 +30,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ---------------------------------------------------------------------------
-# Stage 2 — API runtime (the backend image).
+# Stage 2: API runtime (the backend image).
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim AS api
 
@@ -71,7 +71,7 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
 
 # ---------------------------------------------------------------------------
-# Stage 3 — Caddy: serves the same bundle and proxies `/api/*` to the API.
+# Stage 3: Caddy: serves the same bundle and proxies `/api/*` to the API.
 # ---------------------------------------------------------------------------
 FROM caddy:2-alpine AS web
 

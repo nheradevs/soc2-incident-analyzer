@@ -4,8 +4,8 @@ Esta guía asume que **ya tienes** un proyecto de GCP y una instancia creada. Cu
 para que el analizador SOC L2 quede publicado desde el repositorio de GitHub en una sola máquina.
 
 La máquina objetivo es una **e2-micro**: 1 GB de RAM, 2 vCPU compartidas y 30 GB de disco. La
-aplicación cabe de sobra en ejecución —medido con el export de ejemplo, el API llega a **~134 MB**
-de pico y Caddy a **~15 MB**—, pero **la compilación de Angular no cabe**: por eso el `Dockerfile`
+aplicación cabe de sobra en ejecución (medida con el export de ejemplo, el API llega a **~134 MB**
+de pico y Caddy a **~15 MB**), pero **la compilación de Angular no cabe**. Por eso el `Dockerfile`
 es multi-etapa y compila el frontend con `NODE_OPTIONS=--max-old-space-size=768`, y por eso el
 paso 3 (swap de 2 GB) **no es opcional** si vas a construir en la propia VM.
 

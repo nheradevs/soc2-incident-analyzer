@@ -77,7 +77,7 @@ DOCUMENT_TIMESTAMP = datetime(2026, 10, 23, 13, 44, 6)
 MAX_BLOCK_JITTER_SECONDS = 3600
 
 NOTICE_LINES: tuple[str, ...] = (
-    f"{SYNTHETIC_TAG} FIXTURE — NOT THE CLIENT EXPORT",
+    f"{SYNTHETIC_TAG} FIXTURE, NOT THE CLIENT EXPORT",
     "",
     "Rows are verbatim copies of rows observed in",
     f"{REAL_EXPORT.name}",
