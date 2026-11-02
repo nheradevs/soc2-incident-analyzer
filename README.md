@@ -8,6 +8,10 @@ to PDF. The scenario it answers is the one the project was built for: a cybersec
 in Stockholm, a SOC L2 analyst, and an export of a day of logs with **no access to the SIEM, EDR,
 DNS or netflow** that produced it.
 
+**Live: <http://104.198.16.58>** — the real export is analysed end to end there, from the upload to
+the PDF. It runs on a single GCP `e2-micro` instance from this repository, so what you see is the
+code in `main`, not a mockup.
+
 Every claim the app makes is tied to a `Log_ID` from the file. Nothing is asserted because a rule
 "feels" right or because a model said so.
 
@@ -119,6 +123,9 @@ Measured on the development machine: 50,050 rows load in 7.5 s, detect in 17.6 s
 well under a second.
 
 ## Deploy
+
+La instancia viva está en **<http://104.198.16.58>**, desplegada desde este repositorio en una
+`e2-micro` de GCP.
 
 La aplicación se publica en **un único servidor** con dos contenedores: `web` (Caddy, lo único
 accesible desde Internet, sirve el bundle Angular y hace de proxy de `/api/*`) y `api` (FastAPI, sin
