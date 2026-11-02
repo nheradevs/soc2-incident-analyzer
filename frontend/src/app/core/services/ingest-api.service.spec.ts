@@ -96,4 +96,27 @@ describe('IngestApiService', () => {
     expect(failure?.status).toBe(409);
     expect(failure?.message).toBe(NO_SESSION_MESSAGE);
   });
+
+  it('reads the summary of the session the server already holds', () => {
+    let received: UploadResponse | undefined;
+    service.getSession().subscribe((summary) => (received = summary));
+
+    const request = http.expectOne('/api/session');
+    expect(request.request.method).toBe('GET');
+
+    const summary = uploadResponseFixture();
+    request.flush(summary);
+    expect(received).toEqual(summary);
+  });
+
+  it('surfaces the 409 message verbatim when the server holds no session', () => {
+    const detail = 'Todavía no has cargado ningún archivo. Sube un export .xlsx para empezar.';
+    let failure: ApiFailure | undefined;
+    service.getSession().subscribe({ error: (error) => (failure = error) });
+
+    http.expectOne('/api/session').flush({ detail }, { status: 409, statusText: 'Conflict' });
+
+    expect(failure?.status).toBe(409);
+    expect(failure?.message).toBe(detail);
+  });
 });

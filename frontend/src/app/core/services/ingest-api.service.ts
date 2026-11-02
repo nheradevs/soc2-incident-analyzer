@@ -71,6 +71,18 @@ export class IngestApiService {
       .pipe(catchError(failWithDetail));
   }
 
+  /**
+   * Summary of the export the server already holds, if any.
+   *
+   * The session lives on the server, not in this tab, so a 409 is the honest
+   * "nothing loaded" answer and not an error worth retrying.
+   */
+  getSession(): Observable<UploadResponse> {
+    return this.http
+      .get<UploadResponse>(`${API_BASE}/session`)
+      .pipe(catchError(failWithDetail));
+  }
+
   /** Fetch one page of normalized events with optional search and ordering. */
   getEvents(query: EventsQuery): Observable<EventsPage> {
     let params = new HttpParams()

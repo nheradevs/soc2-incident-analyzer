@@ -1,13 +1,13 @@
 <section class="card" aria-labelledby="upload-title">
   <div class="card-head">
     <h2 id="upload-title">Carga del export</h2>
-    <span class="card-note">{{ busy() ? 'Leyendo el archivo' : '.xlsx' }}</span>
+    <span class="card-note">{{ cardNote() }}</span>
   </div>
 
   <div
     class="drop drop-zone"
     [class.drop--active]="dragging()"
-    [class.drop--empty]="summary() === null && !busy()"
+    [class.drop--empty]="summary() === null && !busy() && !checking()"
     (dragover)="onDragOver($event)"
     (dragleave)="onDragLeave()"
     (drop)="onDrop($event)"
@@ -31,19 +31,25 @@
       </svg>
     </span>
 
-    @if (busy()) {
+    @if (busy() || checking()) {
       <div class="status" role="status">
         <span class="spinner" aria-hidden="true"></span>
-        <span>Validando {{ selectedFileName() }}</span>
+        <span>{{ statusText() }}</span>
       </div>
       <div
         class="progress"
         role="progressbar"
-        aria-label="Progreso de la validación"
+        [attr.aria-label]="busy() ? 'Progreso de la validación' : 'Comprobando la sesión del servidor'"
       >
         <div class="progress__bar"></div>
       </div>
-      <p class="card-note">El archivo se lee y se normaliza en el servidor.</p>
+      <p class="card-note">
+        {{
+          busy()
+            ? 'El archivo se lee y se normaliza en el servidor.'
+            : 'Comprobando si el servidor ya tiene un archivo cargado.'
+        }}
+      </p>
     } @else if (summary()) {
       <h3>Arrastra el archivo del cliente</h3>
       <p class="drop__hint">Un archivo por análisis. También puedes elegirlo desde el disco.</p>
@@ -55,7 +61,7 @@
       </p>
     }
 
-    @if (!busy()) {
+    @if (!busy() && !checking()) {
       <div class="drop__actions">
         <button class="btn btn--primary" type="button" (click)="chooseFile()">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">

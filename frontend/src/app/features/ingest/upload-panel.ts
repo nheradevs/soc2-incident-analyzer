@@ -6,8 +6,9 @@ import { IngestApiService } from '../../core/services/ingest-api.service';
 
 /**
  * RF1 upload panel: drag and drop plus a file picker, with the backend message
- * verbatim. The file summary it shows after a successful load comes from the
- * parent, so the panel never composes data the upload did not return.
+ * verbatim. The file summary it shows comes from the parent, so the panel never
+ * composes data no endpoint returned: a summary restored from `/api/session`
+ * and one returned by an upload render through the same path.
  */
 @Component({
   selector: 'app-upload-panel',
@@ -22,6 +23,9 @@ export class UploadPanel {
 
   readonly summary = input<UploadResponse | null>(null);
 
+  /** True while the page is asking the server whether it already holds a file. */
+  readonly checking = input(false);
+
   readonly uploaded = output<UploadResponse>();
   readonly busy = signal(false);
   readonly dragging = signal(false);
@@ -30,6 +34,21 @@ export class UploadPanel {
 
   /** The last file the user handed over, so a retry re-sends that same file. */
   private lastFile: File | null = null;
+
+  /** One-word state of the card header; never claims a file the panel has not seen. */
+  readonly cardNote = computed(() => {
+    if (this.busy()) {
+      return 'Leyendo el archivo';
+    }
+    return this.checking() ? 'Revisando' : '.xlsx';
+  });
+
+  /** What the loading state says it is doing, so the wait is never anonymous. */
+  readonly statusText = computed(() =>
+    this.busy()
+      ? `Validando ${this.selectedFileName() ?? ''}`.trim()
+      : 'Revisando si ya hay un archivo cargado',
+  );
 
   /** A retry only makes sense when the failure could have a different outcome. */
   readonly canRetry = computed(() => {

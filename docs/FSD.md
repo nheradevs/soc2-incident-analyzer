@@ -280,6 +280,7 @@ backend/   FastAPI (Python 3.10+)
 |---|---|---|
 | `/api/upload` | POST | Sube el .xlsx, devuelve esquema + stats + reporte de calidad de datos |
 | `/api/analyze` | POST | Corre detectores + clasificación sobre el frame cargado y devuelve el payload del dashboard: cobertura, distribución por criticidad, serie horaria, top hosts, cuentas humanas (con exclusiones declaradas), salida por destino externo, tipos de ataque y lista de incidentes ordenada por severidad |
+| `/api/session` | GET | Devuelve el resumen de la carga actual con el mismo cuerpo que `/api/upload`, o 409 si no hay nada. Es lo que permite que la pantalla de Carga muestre el estado real del servidor al entrar y no solo lo que subió esa pestaña |
 | `/api/events` | GET | Eventos paginados (tabla), filtrable por `Log_ID` |
 | `/api/incidents/{incident_id}` | GET | Drill-down de un incidente: clasificación, hallazgos con su justificación y las **filas reales** del export citadas como evidencia (unidas por `Log_ID`, 36 columnas) |
 | `/api/report` | POST | Genera informe (SSE con progreso, streaming IA) |

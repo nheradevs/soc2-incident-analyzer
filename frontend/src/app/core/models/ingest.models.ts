@@ -45,7 +45,11 @@ export interface QualityReport {
   timestamp_parse_failures: TimestampParseFailures;
 }
 
-/** `POST /api/upload` success body. */
+/**
+ * `POST /api/upload` success body. `GET /api/session` returns this same shape
+ * when the server already holds a file, so one type rebuilds the load panel
+ * whether the export arrived in this tab or in an earlier session.
+ */
 export interface UploadResponse {
   file_name: string;
   detected_columns: string[];

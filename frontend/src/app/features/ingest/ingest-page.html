@@ -8,11 +8,15 @@
 </div>
 
 <div class="workspace">
-  <app-upload-panel [summary]="summary()" (uploaded)="onUploaded($event)" />
+  <app-upload-panel
+    [summary]="summary()"
+    [checking]="checkingSession()"
+    (uploaded)="onUploaded($event)"
+  />
 
   @if (summary(); as data) {
     <app-quality-summary [summary]="data" />
-  } @else {
+  } @else if (!checkingSession()) {
     <section class="card" aria-labelledby="quality-empty-title">
       <div class="empty-panel">
         <h3 id="quality-empty-title">Qué vas a ver cuando cargues el archivo</h3>

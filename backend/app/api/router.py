@@ -41,6 +41,12 @@ NO_SESSION_MESSAGE = (
     "Todavía no se ha cargado ningún archivo. Sube un export .xlsx y vuelve a intentarlo."
 )
 
+# `/api/session` answers "is there a file loaded?", so its conflict is worded as
+# a state the user can act on, not as a failed retry of a previous request.
+SESSION_EMPTY_MESSAGE = (
+    "Todavía no has cargado ningún archivo. Sube un export .xlsx para empezar."
+)
+
 UNKNOWN_INCIDENT_MESSAGE = "No existe un incidente con el identificador «{incident_id}»."
 
 # Unreadable-workbook failures: a bad zip, a non-Excel zip, a broken sheet.
@@ -84,6 +90,22 @@ def _too_large(settings: Settings) -> HTTPException:
             f"{settings.max_upload_mb} MB."
         ),
     )
+
+
+def _summary(frame: pd.DataFrame, file_name: str) -> dict[str, Any]:
+    """The upload summary: everything the load panel rebuilds itself from.
+
+    One builder for both endpoints, so the browser cannot get a different shape
+    depending on whether the file arrived in this tab or in a previous session.
+    """
+    report = quality_report(frame)
+    return {
+        "file_name": file_name,
+        "detected_columns": report["detected_columns"],
+        "row_count": report["row_count"],
+        "time_range": _time_range(frame),
+        "quality": report,
+    }
 
 
 @router.post(
@@ -143,15 +165,25 @@ async def upload_export(
             ),
         ) from error
 
-    session_store.store(frame)
-    report = quality_report(frame)
-    return {
-        "file_name": file_name,
-        "detected_columns": report["detected_columns"],
-        "row_count": report["row_count"],
-        "time_range": _time_range(frame),
-        "quality": report,
-    }
+    summary = _summary(frame, file_name)
+    session_store.store(frame, summary)
+    return summary
+
+
+@router.get("/session", tags=["ingest"])
+def get_session() -> dict[str, Any]:
+    """Summary of the export this process already holds, for a browser reload.
+
+    The events table and the upload panel used to disagree after a reload
+    because the panel only knew about its own tab's upload. This endpoint is the
+    single answer both of them read: same body `/api/upload` returns.
+    """
+    summary = session_store.summary()
+    if summary is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=SESSION_EMPTY_MESSAGE
+        )
+    return summary
 
 
 @router.get("/events", tags=["ingest"])
