@@ -57,11 +57,25 @@ No leas todos los identificadores. Muestra dos y decí que están todos citados.
 
 ## 3:05 a 3:40 · El momento que te distingue
 
-Abre el incidente `INC-20261023-0936`, el que figura con la marca de validación.
+Este bloque es el que decide si el trabajo parece un análisis o un volcado de alertas. Tiene cuatro movimientos y conviene ensayarlos juntos, porque el valor está en la secuencia, no en la frase.
 
-> "Este es el caso que más me importa mostrar. La cuenta backupsvc ejecuta vssadmin delete shadows, que es precursor clásico de ransomware, y lee 16 archivos financieros en cuatro minutos. Podría haberlo reportado como ransomware y el video habría sonado más grave."
+**Movimiento 1, el indicador.** Abre el incidente `INC-20261023-0936` desde la lista. Señala la línea de hallazgos donde aparece el comando.
 
-> "Pero esa misma cuenta hace lecturas legítimas de Finanzas: 23 de los 64 accesos del archivo. Y vssadmin también lo usan herramientas de respaldo. Así que la app lo reporta como alto, requiere validación humana, y en el texto generado la palabra ransomware no aparece. Un falso positivo en un informe de seguridad cuesta más caro que un hallazgo no reportado, porque destruye la confianza en todo el resto del documento."
+> "La cuenta backupsvc ejecuta vssadmin delete shadows, que es precursor clásico de ransomware. Y lee 16 archivos financieros en cuatro minutos."
+
+**Movimiento 2, por qué no alcanza.** Sin cambiar de pantalla, señala el segundo hallazgo del mismo incidente, el de lectura masiva.
+
+> "Con eso solo, cualquier herramienta te firma un ransomware. Pero esa misma cuenta hace lecturas legítimas de Finanzas: 23 de los 64 accesos de este archivo. Y vssadmin también lo usan las herramientas de respaldo."
+
+**Movimiento 3, la salida del sistema.** Señala la etiqueta de validación y después la justificación escrita.
+
+> "Así que la app lo reporta como alto, requiere validación humana. Y fijate en la justificación: dice explícitamente que la lectura masiva también la produce una herramienta de respaldo."
+
+**Movimiento 4, la prueba negativa.** Abre el informe técnico en la sección de hallazgos y busca la palabra. No está.
+
+> "En todo el texto generado la palabra ransomware no aparece. Eso es deliberado. Un falso positivo en un informe de seguridad cuesta más caro que un hallazgo no reportado, porque destruye la confianza en el resto del documento, y en el próximo informe nadie te cree."
+
+**Por qué esta secuencia funciona:** muestra el indicador, muestra la duda, muestra la decisión y muestra la prueba de que la decisión se respetó. Si te quedas solo con la frase, es una opinión. Con los cuatro movimientos, es un criterio.
 
 ## 3:40 a 4:30 · El informe
 
