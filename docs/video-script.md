@@ -5,6 +5,23 @@
 
 Los nombres de pantalla, botones y textos de este guion son los que la app muestra hoy. Si al grabar ves otro texto, cambió la interfaz y hay que ajustar el guion.
 
+## Hoja de rodaje
+
+Ocho bloques, 300 segundos exactos. Tené esto al lado mientras grabás.
+
+| Tiempo | Pantalla | Qué tocás | La frase que no puede faltar |
+| --- | --- | --- | --- |
+| 0:00 a 0:25 | Cargar, vacía | nada | "Soy analista SOC Nivel 2 en una consultora en Estocolmo" |
+| 0:25 a 1:10 | Cargar | arrastrar el Excel, panel de calidad, buscar `PROXY_ACCESS` | "si eso no se normaliza, un detector devuelve cero filas y el ataque desaparece" |
+| 1:10 a 2:00 | Análisis | indicadores, serie horaria, salida externa | "no vas a encontrar un ranking de IPs de origen" |
+| 2:00 a 3:05 | Análisis, detalle | incidente `INC-20261023-0902`, evidencia | "ocho de las diez reglas dispararon sobre el mismo incidente" |
+| 3:05 a 3:40 | Análisis | incidente `INC-20261023-0936`, los cuatro movimientos | "en todo el texto generado la palabra ransomware no aparece" |
+| 3:40 a 4:30 | Informe | switch de versiones, recorrer las nueve secciones | "la ejecutiva no cita ni un identificador técnico" |
+| 4:30 a 4:55 | Informe | descargar el PDF de cada versión, abrir la portada | "cada archivo lleva solo lo que pediste" |
+| 4:55 a 5:00 | Informe | nada | "el motor decide, la IA redacta, y todo se verifica contra una fila" |
+
+Si te sobra tiempo en algún bloque, no lo rellenes: pasá al siguiente. Si te falta, recortá el bloque de las 2:00, nunca el de las 3:05 ni el PDF.
+
 ## Antes de grabar (5 minutos de preparación)
 
 1. Terminal 1: `cd ~/Documents/soc2/backend && uv run uvicorn app.main:app --port 8000`
@@ -91,7 +108,7 @@ Señala la línea de estado de la redacción asistida.
 
 Descargá con el botón de la versión activa y abrí el archivo. Portada con clasificación, tabla de niveles, tabla de evidencia con identificadores, paginación.
 
-> "17 páginas, generado en el servidor, con portada, clasificación general, las dos versiones y las tablas de evidencia. Este es el archivo que se entrega."
+> "Siete páginas, generado en el servidor, con portada, clasificación general y las tablas. Y si cambias a la versión técnica y descargás de nuevo, son doce: cada archivo lleva solo lo que pediste. Este es el que se entrega."
 
 ## 4:55 a 5:00 · Cierre
 
